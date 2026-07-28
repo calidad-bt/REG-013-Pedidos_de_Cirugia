@@ -152,6 +152,44 @@ select option{background-color:#fff!important;background-image:none!important;co
 
 .no-print{}
 
+/* ══════════════ RESPONSIVE / MOBILE ══════════════ */
+@media (max-width: 760px) {
+  nav{padding:0 10px;gap:4px;flex-wrap:wrap;height:auto;min-height:var(--nav-h);}
+  .nav-brand{padding-right:8px;font-size:10px;}
+  nav a{padding:5px 8px;font-size:10.5px;}
+  .nav-end{gap:6px;}
+  .nav-end .btn-sm{padding:0 8px;font-size:10px;}
+
+  .layout{padding:calc(var(--nav-h) + 14px) 8px 30px;}
+
+  .doc-header{grid-template-columns:1fr;}
+  .logo-box{height:44px;border-right:none;border-bottom:1px solid var(--border);}
+  .doc-title-area{border-right:none;border-bottom:1px solid var(--border);padding:10px 12px;}
+  .doc-meta{grid-template-columns:1fr 1fr;}
+
+  .kpi-row{grid-template-columns:repeat(2,1fr);gap:6px;}
+  .kpi-num{font-size:16px;}
+
+  .card-body{padding:10px 10px 12px;}
+
+  /* Tablas -> tarjetas apiladas */
+  .tbl-wrap{overflow-x:visible;}
+  table.tbl{table-layout:auto;width:100%;}
+  table.tbl thead{display:none;}
+  table.tbl, table.tbl tbody{display:block;width:100%;}
+  table.tbl tr{display:block;width:100%;border:1px solid var(--border);border-radius:6px;margin-bottom:10px;background:var(--surface);overflow:hidden;}
+  table.tbl tr:hover td{background:transparent;}
+  table.tbl td{display:block;width:100%!important;border:none!important;border-bottom:1px solid var(--bg)!important;padding:7px 10px;text-align:left;}
+  table.tbl tr td:last-child{border-bottom:none!important;}
+  table.tbl td::before{content:attr(data-label);display:block;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text-2);margin-bottom:3px;}
+  table.tbl td[data-label="#"]{display:none;}
+  .acc-cell{width:100%;}
+  .acc-btns{flex-wrap:wrap;}
+
+  .kpi-card{padding:7px 8px;}
+  .modal{width:94vw;}
+}
+
 @media print {
   @page { size: A3 landscape; margin: 8mm; }
   nav, .no-print { display: none !important; }
@@ -548,32 +586,32 @@ const Ped = {
     const tr=document.createElement("tr");
     if(d.anulado && d.anulado.si) tr.classList.add("row-anulado");
     tr.innerHTML=`
-      <td><span class="row-num"></span></td>
-      <td>${Ped.solicitanteSelect(d.solicitante||"")}</td>
-      <td><div class="date-wrap">
+      <td data-label="#"><span class="row-num"></span></td>
+      <td data-label="Solicitante">${Ped.solicitanteSelect(d.solicitante||"")}</td>
+      <td data-label="Fecha pedido"><div class="date-wrap">
         <input class="ti ped-fpedido" type="text" inputmode="numeric" maxlength="8" placeholder="dd/mm/aa"
           value="${esc(fpedido)}" oninput="mkDirty('ped-st');maskFecha(this)" onclick="abrirPickerFecha(this)">
         <input class="date-picker-hidden" type="date" tabindex="-1" onchange="pickFecha(this,()=>mkDirty('ped-st'))">
       </div></td>
-      <td style="width:1%"><textarea class="ta cta ped-paciente" rows="1" oninput="mkDirty('ped-st');autoGrow(this)">${esc(d.paciente||"")}</textarea></td>
-      <td style="width:1%"><textarea class="ta cta ped-medico" rows="1" oninput="mkDirty('ped-st');autoGrow(this)">${esc(d.medico||"")}</textarea></td>
-      <td style="width:1%"><textarea class="ta cta ped-lugar" rows="1" oninput="mkDirty('ped-st');autoGrow(this)">${esc(d.lugar||"")}</textarea></td>
-      <td><div class="date-wrap">
+      <td data-label="Paciente" style="width:1%"><textarea class="ta cta ped-paciente" rows="1" oninput="mkDirty('ped-st');autoGrow(this)">${esc(d.paciente||"")}</textarea></td>
+      <td data-label="Médico" style="width:1%"><textarea class="ta cta ped-medico" rows="1" oninput="mkDirty('ped-st');autoGrow(this)">${esc(d.medico||"")}</textarea></td>
+      <td data-label="Lugar de CX" style="width:1%"><textarea class="ta cta ped-lugar" rows="1" oninput="mkDirty('ped-st');autoGrow(this)">${esc(d.lugar||"")}</textarea></td>
+      <td data-label="Fecha CX"><div class="date-wrap">
         <input class="ti ped-fcx" type="text" inputmode="numeric" maxlength="8" placeholder="dd/mm/aa"
           value="${esc(fcx)}" oninput="mkDirty('ped-st');maskFecha(this)" onclick="abrirPickerFecha(this)" onblur="Ped.sortRows()">
         <input class="date-picker-hidden" type="date" tabindex="-1" onchange="pickFecha(this,()=>mkDirty('ped-st'));Ped.sortRows()">
       </div></td>
-      <td style="width:1%"><textarea class="ta cta ped-producto" rows="1" oninput="mkDirty('ped-st');autoGrow(this)">${esc(d.producto||"")}</textarea></td>
-      <td>${Ped.proveedorSelect(d.proveedor||"")}</td>
-      <td><div class="date-wrap">
+      <td data-label="Producto" style="width:1%"><textarea class="ta cta ped-producto" rows="1" oninput="mkDirty('ped-st');autoGrow(this)">${esc(d.producto||"")}</textarea></td>
+      <td data-label="Proveedor">${Ped.proveedorSelect(d.proveedor||"")}</td>
+      <td data-label="Fecha retiro"><div class="date-wrap">
         <input class="ti ped-fretiro" type="text" inputmode="numeric" maxlength="8" placeholder="dd/mm/aa"
           value="${esc(fretiro)}" oninput="mkDirty('ped-st');maskFecha(this)" onclick="abrirPickerFecha(this)">
         <input class="date-picker-hidden" type="date" tabindex="-1" onchange="pickFecha(this,()=>mkDirty('ped-st'))">
       </div></td>
-      <td><input class="ti money-in ped-costo" type="text" inputmode="numeric" value="${d.costo?('$ '+Number(d.costo).toLocaleString('es-AR')):''}" oninput="mkDirty('ped-st');maskMoney(this)"></td>
-      <td><input class="ti oc-in ped-oc" type="text" inputmode="numeric" value="${esc(d.oc||"")}" oninput="mkDirty('ped-st');maskOC(this)"></td>
-      <td>${Ped.estSelect(d.estado)}</td>
-      <td class="no-print">
+      <td data-label="Costo sin IVA"><input class="ti money-in ped-costo" type="text" inputmode="numeric" value="${d.costo?('$ '+Number(d.costo).toLocaleString('es-AR')):''}" oninput="mkDirty('ped-st');maskMoney(this)"></td>
+      <td data-label="OC"><input class="ti oc-in ped-oc" type="text" inputmode="numeric" value="${esc(d.oc||"")}" oninput="mkDirty('ped-st');maskOC(this)"></td>
+      <td data-label="Estado">${Ped.estSelect(d.estado)}</td>
+      <td data-label="Acciones" class="no-print">
         <div class="acc-cell">
           <div class="acc-btns">
             <button class="btn btn-light btn-sm btn-icon" onclick="Ped.copiar(this)" title="Copiar" aria-label="Copiar">${COPY_ICON}</button>
@@ -727,16 +765,16 @@ const Prov = {
     d=d||{};
     const tr=document.createElement("tr");
     tr.innerHTML=`
-      <td><span class="row-num"></span></td>
-      <td><input class="ti prov-empresa" type="text" value="${esc(d.empresa||"")}" oninput="mkDirty('prov-st');Ped.refreshProveedorSelects()"></td>
-      <td>
+      <td data-label="#"><span class="row-num"></span></td>
+      <td data-label="Empresa"><input class="ti prov-empresa" type="text" value="${esc(d.empresa||"")}" oninput="mkDirty('prov-st');Ped.refreshProveedorSelects()"></td>
+      <td data-label="Correo">
         <input class="ti prov-correo" type="text" value="${esc(d.correo||"")}" placeholder="nombre@dominio.com"
           oninput="mkDirty('prov-st')" onblur="Prov.validarCorreo(this)">
         <div class="email-msg">Correo con formato inválido</div>
       </td>
-      <td><input class="ti prov-contacto" type="text" value="${esc(d.contacto||"")}" oninput="mkDirty('prov-st')"></td>
-      <td><input class="ti prov-categoria" type="text" value="${esc(d.categoria||"")}" oninput="mkDirty('prov-st')"></td>
-      <td class="no-print" style="text-align:center"><button class="del-btn" onclick="Prov.elim(this)">×</button></td>`;
+      <td data-label="Contacto"><input class="ti prov-contacto" type="text" value="${esc(d.contacto||"")}" oninput="mkDirty('prov-st')"></td>
+      <td data-label="Categoría"><input class="ti prov-categoria" type="text" value="${esc(d.categoria||"")}" oninput="mkDirty('prov-st')"></td>
+      <td data-label="Eliminar" class="no-print" style="text-align:center"><button class="del-btn" onclick="Prov.elim(this)">×</button></td>`;
     return tr;
   },
   validarCorreo(inp){
