@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Pedidos de Cirugía — SGC BT</title>
+<title>Pedidos CX — SGC BT</title>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -127,6 +127,35 @@ select option{background-color:#fff!important;background-image:none!important;co
 .pe-cotiz + .sel-arrow{border-top-color:var(--warn-text);}
 .pe-noiniciado + .sel-arrow{border-top-color:var(--text-2);}
 
+/* ── ESTADO COTIZACIÓN ───────────────────────────────────── */
+.co-notiene{background-color:#EF75AC!important;color:#1C2226!important;border-color:#D65D95!important;}
+.co-nocotiza{background-color:#F75757!important;color:#1C2226!important;border-color:#D63B3B!important;}
+.co-enproceso{background-color:#0070C0!important;color:#FFFFFF!important;border-color:#00568F!important;}
+.co-aprobado{background-color:#92D050!important;color:#1C2226!important;border-color:#749E3E!important;}
+.co-notiene + .sel-arrow{border-top-color:#1C2226;}
+.co-nocotiza + .sel-arrow{border-top-color:#1C2226;}
+.co-enproceso + .sel-arrow{border-top-color:#FFFFFF;}
+.co-aprobado + .sel-arrow{border-top-color:#1C2226;}
+
+/* ── COTIZACIONES: tarjetas ──────────────────────────────── */
+.coti-list{display:flex;flex-direction:column;gap:14px;}
+.coti-card{border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;background:var(--surface);}
+.coti-head{display:flex;flex-wrap:wrap;background:var(--bg);border-bottom:1px solid var(--border);}
+.coti-field{padding:6px 8px;border-right:1px solid var(--border);flex:1 1 160px;min-width:0;}
+.coti-field.f-sm{flex:0 0 90px;}
+.coti-field.f-md{flex:0 0 150px;}
+.coti-field:last-child{border-right:none;}
+.coti-del-wrap{flex:0 0 34px;display:flex;align-items:center;justify-content:center;padding:6px;}
+.coti-lbl{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text-2);display:block;margin-bottom:3px;}
+.coti-provs-head{display:flex;background:var(--surface);padding:6px 8px 0;}
+.coti-provs-head span{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text-3);}
+.coti-provs{padding:4px 8px 8px;display:flex;flex-direction:column;gap:6px;}
+.coti-prov-row{display:flex;flex-wrap:wrap;align-items:flex-start;gap:6px;padding:5px 6px;border:1px solid var(--border);border-radius:3px;}
+.coti-prov-num{font-family:var(--mono);font-size:10.5px;color:var(--text-3);flex:0 0 16px;padding-top:6px;text-align:center;}
+.coti-prov-field{flex:1 1 150px;min-width:0;}
+.coti-prov-otro{margin-top:4px;}
+.coti-empty{padding:10px 8px;color:var(--text-3);font-size:11.5px;font-style:italic;}
+
 .badge{display:inline-block;border-radius:10px;font-size:11px;font-weight:700;padding:2px 8px;}
 .badge-anulado{background:var(--err-bg);color:var(--err-text);border:1px solid var(--err-bd);}
 .acc-cell{display:flex;flex-direction:column;gap:3px;align-items:flex-start;}
@@ -188,6 +217,12 @@ select option{background-color:#fff!important;background-image:none!important;co
 
   .kpi-card{padding:7px 8px;}
   .modal{width:94vw;}
+
+  .coti-field{flex:1 1 100%;border-right:none;border-bottom:1px solid var(--border);}
+  .coti-field:last-child{border-bottom:none;}
+  .coti-del-wrap{flex:1 1 100%;justify-content:flex-start;padding:6px 8px;}
+  .coti-prov-row{flex-direction:column;}
+  .coti-prov-field{flex:1 1 100%;width:100%;}
 }
 
 @media print {
@@ -205,7 +240,8 @@ select option{background-color:#fff!important;background-image:none!important;co
 <nav>
   <span class="nav-brand">SGC — BT</span>
   <div class="nav-sep"></div>
-  <a href="#sec-pedidos" class="active" onclick="return goSection(this,'sec-pedidos')">Pedidos de Cirugía</a>
+  <a href="#sec-pedidos" class="active" onclick="return goSection(this,'sec-pedidos')">Pedidos CX</a>
+  <a href="#sec-cotizaciones" onclick="return goSection(this,'sec-cotizaciones')">Cotizaciones</a>
   <a href="#sec-proveedores" onclick="return goSection(this,'sec-proveedores')">Proveedores CX</a>
   <div class="nav-end">
     <button class="btn btn-light btn-sm no-print" onclick="window.print()">Imprimir</button>
@@ -216,13 +252,13 @@ select option{background-color:#fff!important;background-image:none!important;co
 
 <div class="layout">
 
-  <!-- ═══════════ SECCIÓN 1: PEDIDOS DE CIRUGÍA ═══════════ -->
+  <!-- ═══════════ SECCIÓN 1: PEDIDOS CX ═══════════ -->
   <div class="section-page active" id="sec-pedidos">
     <div class="card">
       <div class="doc-header">
         <div class="logo-box"><span class="logo-text">BT</span></div>
         <div class="doc-title-area">
-          <div class="doc-title">Pedidos de Cirugía</div>
+          <div class="doc-title">Pedidos CX</div>
           <div class="doc-subtitle">Solicitud, seguimiento y estado de pedidos de productos para cirugías</div>
         </div>
         <div class="doc-meta">
@@ -234,7 +270,7 @@ select option{background-color:#fff!important;background-image:none!important;co
       </div>
 
       <div class="card-body">
-        <div class="sec-title">Pedidos<span class="sync-inline" id="ped-st">—</span></div>
+        <div class="sec-title">Pedidos CX<span class="sync-inline" id="ped-st">—</span></div>
 
         <div class="kpi-row">
           <div class="kpi-card"><div class="kpi-num" id="k-total">0</div><div class="kpi-lbl">Total</div></div>
@@ -289,7 +325,32 @@ select option{background-color:#fff!important;background-image:none!important;co
     </div>
   </div>
 
-  <!-- ═══════════ SECCIÓN 2: PROVEEDORES CX ═══════════ -->
+  <!-- ═══════════ SECCIÓN 2: COTIZACIONES ═══════════ -->
+  <div class="section-page" id="sec-cotizaciones">
+    <div class="card">
+      <div class="doc-header">
+        <div class="logo-box"><span class="logo-text">BT</span></div>
+        <div class="doc-title-area">
+          <div class="doc-title">Cotizaciones</div>
+          <div class="doc-subtitle">Pedidos de cotización a proveedores por paciente y producto</div>
+        </div>
+        <div class="doc-meta">
+          <div class="meta-cell"><span class="meta-label">Aprobación</span><span class="meta-value">—</span></div>
+          <div class="meta-cell"><span class="meta-label">Entrada en vigor</span><span class="meta-value">28/07/2026</span></div>
+          <div class="meta-cell"><span class="meta-label">Código</span><span class="meta-value">REG-013</span></div>
+          <div class="meta-cell"><span class="meta-label">Versión</span><span class="meta-value">01</span></div>
+        </div>
+      </div>
+
+      <div class="card-body">
+        <div class="sec-title">Cotizaciones<span class="sync-inline" id="coti-st">—</span></div>
+        <div class="coti-list" id="coti-list"></div>
+        <button class="add-row-btn no-print" onclick="Coti.addCard()">+ Agregar cotización</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════ SECCIÓN 3: PROVEEDORES CX ═══════════ -->
   <div class="section-page" id="sec-proveedores">
     <div class="card">
       <div class="doc-header">
@@ -364,8 +425,10 @@ select option{background-color:#fff!important;background-image:none!important;co
 const FB_URL   = "https://sgc-bt-default-rtdb.firebaseio.com";
 const FB_PED   = "/pedcx/pedidos";
 const FB_PROV  = "/pedcx/proveedores";
+const FB_COTI  = "/pedcx/cotizaciones";
 const LS_PED   = "pedcx_ped_v1";
 const LS_PROV  = "pedcx_prov_v1";
+const LS_COTI  = "pedcx_coti_v1";
 
 async function fbGet(path){
   const r = await fetch(FB_URL + path + ".json");
@@ -398,6 +461,7 @@ function mkSaved(id){ setInlineStatus(id, "✓ Guardado " + new Date().toLocaleT
 
 /* ══════════════════════ HELPERS GENERALES ══════════════════════ */
 function esc(s){ return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
+function genId(){ return "id"+Date.now().toString(36)+Math.random().toString(36).slice(2,8); }
 function autoGrow(el){ el.style.height="auto"; el.style.height=el.scrollHeight+"px"; }
 document.addEventListener("input", e=>{ if(e.target.classList.contains("ta")) autoGrow(e.target); });
 
@@ -584,6 +648,7 @@ const Ped = {
     d=d||{};
     const fpedido=normFecha(d.fpedido), fcx=normFecha(d.fcx), fretiro=normFecha(d.fretiro);
     const tr=document.createElement("tr");
+    tr.dataset.pedId = d.pedId || genId();
     if(d.anulado && d.anulado.si) tr.classList.add("row-anulado");
     tr.innerHTML=`
       <td data-label="#"><span class="row-num"></span></td>
@@ -673,13 +738,16 @@ const Ped = {
   },
   addRow(){
     const tb=document.getElementById("ped-tbody");
-    tb.appendChild(Ped._buildTr({fpedido:hoyDisplay(),estado:"noiniciado"}));
+    const tr = Ped._buildTr({fpedido:hoyDisplay(),estado:"noiniciado"});
+    tb.appendChild(tr);
     Ped.sortRows(); mkDirty("ped-st");
+    Coti.addLinkedCard(tr.dataset.pedId);
   },
   _ser(){
     return [...document.querySelectorAll("#ped-tbody tr")].map(tr=>{
       const g=(cls)=>tr.querySelector(cls)?.value||"";
       return {
+        pedId: tr.dataset.pedId || "",
         solicitante: tr.querySelector(".sol-sel")?.value || "",
         fpedido:  g(".ped-fpedido"),
         paciente: g(".ped-paciente"),
@@ -799,6 +867,7 @@ const Prov = {
     if(!confirm("¿Eliminar este proveedor?")) return;
     tr.remove(); Prov._renum(); mkDirty("prov-st");
     Ped.refreshProveedorSelects();
+    Coti.refreshProveedorSelects();
     scheduleSaveProv();
   },
   _ser(){
@@ -823,28 +892,248 @@ const Prov = {
     catch(e){ setSyncStatus("Sin conexión","sync-error"); }
     mkSaved("prov-st");
     Ped.refreshProveedorSelects();
+    Coti.refreshProveedorSelects();
+  }
+};
+
+/* ══════════════════════ COTIZACIONES ══════════════════════ */
+const COTI_ESTADOS = [
+  ["notiene",    "NO TIENE"],
+  ["nocotiza",   "NO COTIZA"],
+  ["enproceso",  "EN PROCESO"],
+  ["aprobado",   "APROBADO"]
+];
+
+const Coti = {
+  pacienteOptions(cur){
+    const vals = [...new Set([...document.querySelectorAll("#ped-tbody .ped-paciente")].map(t=>t.value.trim()).filter(Boolean))];
+    const opts = vals.map(v=>`<option value="${esc(v)}"${v===cur?" selected":""}>${esc(v)}</option>`).join("");
+    return `<select class="ts coti-paciente" onchange="mkDirty('coti-st')"><option value="">— paciente —</option>${opts}</select>`;
+  },
+  productoOptions(cur){
+    const vals = [...new Set([...document.querySelectorAll("#ped-tbody .ped-producto")].map(t=>t.value.trim()).filter(Boolean))];
+    const opts = vals.map(v=>`<option value="${esc(v)}"${v===cur?" selected":""}>${esc(v)}</option>`).join("");
+    return `<select class="ts coti-producto" onchange="mkDirty('coti-st')"><option value="">— producto —</option>${opts}</select>`;
+  },
+  proveedorOptions(cur){
+    const provs = [...document.querySelectorAll("#prov-tbody .prov-empresa")].map(i=>i.value.trim()).filter(Boolean);
+    const opts = provs.map(p=>`<option value="${esc(p)}"${p===cur?" selected":""}>${esc(p)}</option>`).join("");
+    const otroSel = cur==="otros"?" selected":"";
+    return `<select class="ts coti-prov-sel" onchange="Coti.onProveedorChange(this)"><option value="">— proveedor —</option>${opts}<option value="otros"${otroSel}>Otros</option></select>`;
+  },
+  estSelect(cur){
+    cur = cur || "notiene";
+    const opts = COTI_ESTADOS.map(([v,label])=>`<option value="${v}"${v===cur?" selected":""}>${label}</option>`).join("");
+    return `<div class="sel-wrap"><select class="ts coti-estado co-${cur}" onchange="Coti.onEstadoChange(this)">${opts}</select><span class="sel-arrow"></span></div>`;
+  },
+  onEstadoChange(sel){
+    COTI_ESTADOS.forEach(([v])=> sel.classList.remove("co-"+v));
+    sel.classList.add("co-"+sel.value);
+    mkDirty("coti-st");
+  },
+  onProveedorChange(sel){
+    const otro = sel.parentElement.querySelector(".coti-prov-otro");
+    if(otro) otro.style.display = sel.value==="otros" ? "block" : "none";
+    mkDirty("coti-st");
+  },
+  buildProvRow(idx, p){
+    p=p||{};
+    return `
+      <div class="coti-prov-row">
+        <span class="coti-prov-num">${idx+1}</span>
+        <div class="coti-prov-field">
+          <span class="coti-lbl">Proveedor</span>
+          ${Coti.proveedorOptions(p.proveedor||"")}
+          <input type="text" class="ti coti-prov-otro" placeholder="Nombre del proveedor" value="${esc(p.proveedorOtro||"")}" oninput="mkDirty('coti-st')" style="display:${p.proveedor==="otros"?"block":"none"}">
+        </div>
+        <div class="coti-prov-field">
+          <span class="coti-lbl">Valor Unid. + IVA</span>
+          <input type="text" class="ti money-in coti-prov-valor" inputmode="numeric" value="${p.valor?('$ '+Number(p.valor).toLocaleString('es-AR')):''}" oninput="mkDirty('coti-st');maskMoney(this)">
+        </div>
+        <div class="coti-prov-field">
+          <span class="coti-lbl">Estado</span>
+          ${Coti.estSelect(p.estado||"notiene")}
+        </div>
+      </div>`;
+  },
+  collectProvRows(wrap){
+    return [...wrap.querySelectorAll(".coti-prov-row")].map(row=>({
+      proveedor: row.querySelector(".coti-prov-sel")?.value||"",
+      proveedorOtro: row.querySelector(".coti-prov-otro")?.value||"",
+      valor: moneyDigits(row.querySelector(".coti-prov-valor")?.value||""),
+      estado: row.querySelector(".coti-estado")?.value||"notiene"
+    }));
+  },
+  regenProvRows(card, n){
+    n = Math.max(0, Math.min(30, n||0));
+    const wrap = card.querySelector(".coti-provs");
+    const current = Coti.collectProvRows(wrap);
+    const next = [];
+    for(let i=0;i<n;i++) next.push(current[i]||{});
+    wrap.innerHTML = next.length
+      ? next.map((p,i)=>Coti.buildProvRow(i,p)).join("")
+      : `<div class="coti-empty">Ingresá la cantidad de proveedores a cotizar arriba.</div>`;
+  },
+  onProvNumChange(inp){
+    maskOC(inp);
+    mkDirty("coti-st");
+    Coti.regenProvRows(inp.closest(".coti-card"), parseInt(inp.value)||0);
+  },
+  _buildCard(d){
+    d=d||{};
+    const card=document.createElement("div");
+    card.className="coti-card";
+    card.dataset.pedId = d.pedId || "";
+    const provs = d.provs||[];
+    const provNum = d.provnum || provs.length || "";
+    card.innerHTML=`
+      <div class="coti-head">
+        <div class="coti-field"><span class="coti-lbl">Paciente</span>${Coti.pacienteOptions(d.paciente||"")}</div>
+        <div class="coti-field"><span class="coti-lbl">Producto</span>${Coti.productoOptions(d.producto||"")}</div>
+        <div class="coti-field f-sm"><span class="coti-lbl">Cantidad</span><input class="ti coti-cantidad" type="text" inputmode="numeric" value="${esc(d.cantidad||"")}" oninput="mkDirty('coti-st');maskOC(this)"></div>
+        <div class="coti-field f-md"><span class="coti-lbl">Cant. proveedores a cotizar</span><input class="ti coti-provnum" type="text" inputmode="numeric" value="${esc(provNum)}" oninput="Coti.onProvNumChange(this)"></div>
+        <div class="coti-del-wrap no-print"><button class="del-btn" onclick="Coti.eliminarCard(this)" title="Eliminar cotización">×</button></div>
+      </div>
+      <div class="coti-provs-head"><span>Proveedores a cotizar</span></div>
+      <div class="coti-provs"></div>`;
+    Coti.regenProvRowsFromData(card, provs, parseInt(provNum)||provs.length||0);
+    return card;
+  },
+  regenProvRowsFromData(card, provs, n){
+    const wrap = card.querySelector(".coti-provs");
+    n = Math.max(0, Math.min(30, n||0));
+    const next=[];
+    for(let i=0;i<n;i++) next.push(provs[i]||{});
+    wrap.innerHTML = next.length
+      ? next.map((p,i)=>Coti.buildProvRow(i,p)).join("")
+      : `<div class="coti-empty">Ingresá la cantidad de proveedores a cotizar arriba.</div>`;
+  },
+  addCard(){
+    const list=document.getElementById("coti-list");
+    list.appendChild(Coti._buildCard({}));
+    mkDirty("coti-st");
+  },
+  addLinkedCard(pedId){
+    const list=document.getElementById("coti-list");
+    list.appendChild(Coti._buildCard({pedId:pedId||""}));
+    mkDirty("coti-st");
+    scheduleSaveCoti();
+  },
+  reconcileWithPedidos(){
+    const list=document.getElementById("coti-list");
+    const existingIds = new Set([...list.querySelectorAll(".coti-card")].map(c=>c.dataset.pedId).filter(Boolean));
+    let added=false;
+    document.querySelectorAll("#ped-tbody tr").forEach(tr=>{
+      const pedId = tr.dataset.pedId;
+      if(!pedId || existingIds.has(pedId)) return;
+      const paciente = tr.querySelector(".ped-paciente")?.value.trim() || "";
+      const producto = tr.querySelector(".ped-producto")?.value.trim() || "";
+      list.appendChild(Coti._buildCard({pedId, paciente, producto}));
+      existingIds.add(pedId);
+      added=true;
+    });
+    if(added){ mkDirty("coti-st"); scheduleSaveCoti(); }
+  },
+  syncPacienteProducto(pedId, field, value){
+    if(!pedId) return;
+    const card = document.querySelector(`.coti-card[data-ped-id="${pedId}"]`);
+    if(!card) return;
+    const sel = field==="paciente" ? card.querySelector(".coti-paciente") : card.querySelector(".coti-producto");
+    if(!sel) return;
+    if(value && ![...sel.options].some(o=>o.value===value)){
+      sel.insertAdjacentHTML("beforeend", `<option value="${esc(value)}">${esc(value)}</option>`);
+    }
+    sel.value = value || "";
+  },
+  eliminarCard(btn){
+    if(!confirm("¿Eliminar esta cotización?")) return;
+    btn.closest(".coti-card").remove();
+    mkDirty("coti-st");
+    scheduleSaveCoti();
+  },
+  refreshPacienteProductoSelects(){
+    const pacientes = [...new Set([...document.querySelectorAll("#ped-tbody .ped-paciente")].map(t=>t.value.trim()).filter(Boolean))];
+    const productos = [...new Set([...document.querySelectorAll("#ped-tbody .ped-producto")].map(t=>t.value.trim()).filter(Boolean))];
+    document.querySelectorAll("#coti-list .coti-paciente").forEach(sel=>{
+      const cur=sel.value;
+      sel.innerHTML = `<option value="">— paciente —</option>` + pacientes.map(v=>`<option value="${esc(v)}"${v===cur?" selected":""}>${esc(v)}</option>`).join("");
+      if(pacientes.includes(cur)) sel.value=cur;
+    });
+    document.querySelectorAll("#coti-list .coti-producto").forEach(sel=>{
+      const cur=sel.value;
+      sel.innerHTML = `<option value="">— producto —</option>` + productos.map(v=>`<option value="${esc(v)}"${v===cur?" selected":""}>${esc(v)}</option>`).join("");
+      if(productos.includes(cur)) sel.value=cur;
+    });
+  },
+  refreshProveedorSelects(){
+    const provs = [...document.querySelectorAll("#prov-tbody .prov-empresa")].map(i=>i.value.trim()).filter(Boolean);
+    document.querySelectorAll("#coti-list .coti-prov-sel").forEach(sel=>{
+      const cur=sel.value;
+      const opts = provs.map(p=>`<option value="${esc(p)}"${p===cur?" selected":""}>${esc(p)}</option>`).join("");
+      const otroSel = cur==="otros"?" selected":"";
+      sel.innerHTML = `<option value="">— proveedor —</option>${opts}<option value="otros"${otroSel}>Otros</option>`;
+      if(provs.includes(cur) || cur==="otros") sel.value=cur;
+    });
+  },
+  _ser(){
+    return [...document.querySelectorAll("#coti-list .coti-card")].map(card=>({
+      pedId: card.dataset.pedId || "",
+      paciente: card.querySelector(".coti-paciente")?.value||"",
+      producto: card.querySelector(".coti-producto")?.value||"",
+      cantidad: card.querySelector(".coti-cantidad")?.value||"",
+      provnum: card.querySelector(".coti-provnum")?.value||"",
+      provs: Coti.collectProvRows(card)
+    }));
+  },
+  restore(rows){
+    const list=document.getElementById("coti-list"); list.innerHTML="";
+    (rows||[]).forEach(d=>list.appendChild(Coti._buildCard(d)));
+  },
+  async save(){
+    const rows=Coti._ser(), pay={rows,ts:Date.now()};
+    lsSet(LS_COTI,pay);
+    try{ await fbSet(FB_COTI,pay); lastCotiTs=pay.ts; setSyncStatus("En vivo","sync-ok"); }
+    catch(e){ setSyncStatus("Sin conexión","sync-error"); }
+    mkSaved("coti-st");
   }
 };
 
 /* ══════════════════════ CARGA / POLLING ══════════════════════ */
-let lastPedTs=0, lastProvTs=0;
-let saveTimerPed=null, saveTimerProv=null;
+let lastPedTs=0, lastProvTs=0, lastCotiTs=0;
+let saveTimerPed=null, saveTimerProv=null, saveTimerCoti=null;
 
 function scheduleSavePed(){ clearTimeout(saveTimerPed); saveTimerPed=setTimeout(()=>Ped.save(),1200); }
 function scheduleSaveProv(){ clearTimeout(saveTimerProv); saveTimerProv=setTimeout(()=>Prov.save(),1200); }
+function scheduleSaveCoti(){ clearTimeout(saveTimerCoti); saveTimerCoti=setTimeout(()=>Coti.save(),1200); }
 
 document.getElementById("ped-tbody")?.addEventListener("input", scheduleSavePed);
+document.getElementById("coti-list")?.addEventListener("input", scheduleSaveCoti);
+document.addEventListener("input", e=>{
+  if(e.target.classList.contains("ped-paciente")){
+    Coti.refreshPacienteProductoSelects();
+    Coti.syncPacienteProducto(e.target.closest("tr")?.dataset.pedId, "paciente", e.target.value.trim());
+  }
+  if(e.target.classList.contains("ped-producto")){
+    Coti.refreshPacienteProductoSelects();
+    Coti.syncPacienteProducto(e.target.closest("tr")?.dataset.pedId, "producto", e.target.value.trim());
+  }
+  if(e.target.classList.contains("prov-empresa")){
+    Coti.refreshProveedorSelects();
+  }
+});
 document.addEventListener("change", e=>{
   if(e.target.closest("#ped-tbody")) scheduleSavePed();
   if(e.target.closest("#prov-tbody")) scheduleSaveProv();
+  if(e.target.closest("#coti-list")) scheduleSaveCoti();
 });
 
 async function loadAll(){
   setSyncStatus("Cargando…");
   try{
-    const [rPed, rProv] = await Promise.all([fbGet(FB_PED), fbGet(FB_PROV)]);
+    const [rPed, rProv, rCoti] = await Promise.all([fbGet(FB_PED), fbGet(FB_PROV), fbGet(FB_COTI)]);
     const lPed  = lsGet(LS_PED)  || {ts:0, rows:[]};
     const lProv = lsGet(LS_PROV) || {ts:0, rows:[]};
+    const lCoti = lsGet(LS_COTI) || {ts:0, rows:[]};
 
     // Proveedores (primero, para que los selects de proveedor de Pedidos ya tengan las opciones)
     let provFinal;
@@ -877,13 +1166,31 @@ async function loadAll(){
     Ped.restore(pedFinal);
     Ped.refreshProveedorSelects();
 
+    // Cotizaciones (al final, ya que sus selects dependen de Pedidos y Proveedores)
+    let cotiFinal;
+    const remoteCotiTs = (rCoti && rCoti.ts) || 0;
+    if(remoteCotiTs >= (lCoti.ts||0) && rCoti && rCoti.rows && rCoti.rows.length){
+      cotiFinal = rCoti.rows; lastCotiTs = remoteCotiTs; lsSet(LS_COTI, rCoti);
+    } else if(lCoti.rows && lCoti.rows.length){
+      cotiFinal = lCoti.rows; lastCotiTs = lCoti.ts||Date.now();
+      fbSet(FB_COTI, {rows:cotiFinal, ts:lastCotiTs}).catch(()=>{});
+    } else {
+      cotiFinal = [];
+      lastCotiTs = Date.now();
+    }
+    Coti.restore(cotiFinal);
+    Coti.reconcileWithPedidos();
+
     setSyncStatus("En vivo","sync-ok");
   } catch(e){
     const lPed  = lsGet(LS_PED)  || {ts:0, rows:[]};
     const lProv = lsGet(LS_PROV) || {ts:0, rows:[]};
+    const lCoti = lsGet(LS_COTI) || {ts:0, rows:[]};
     Prov.restore((lProv.rows&&lProv.rows.length)?lProv.rows:PROV_DEFAULT);
     Ped.restore(lPed.rows||[]);
     Ped.refreshProveedorSelects();
+    Coti.restore(lCoti.rows||[]);
+    Coti.reconcileWithPedidos();
     setSyncStatus("Sin conexión","sync-error");
   }
 }
@@ -903,6 +1210,15 @@ setInterval(async ()=>{
       Ped.restore(remotePed.rows||[]);
     }
     Ped.refreshProveedorSelects();
+    Coti.refreshPacienteProductoSelects();
+    Coti.refreshProveedorSelects();
+    const remoteCoti = await fbGet(FB_COTI);
+    if(remoteCoti && (remoteCoti.ts||0) > lastCotiTs){
+      lastCotiTs = remoteCoti.ts;
+      lsSet(LS_COTI, remoteCoti);
+      Coti.restore(remoteCoti.rows||[]);
+    }
+    Coti.reconcileWithPedidos();
     setSyncStatus("En vivo","sync-ok");
   } catch(e){
     setSyncStatus("Sin conexión","sync-error");
