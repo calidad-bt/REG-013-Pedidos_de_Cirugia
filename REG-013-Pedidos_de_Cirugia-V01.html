@@ -1,0 +1,890 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pedidos de Cirugía — SGC BT</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --accent:#0E6B8A; --accent-d:#094E66; --accent-l:#E4F2F7;
+  --bg:#ECEEF0; --surface:#FFFFFF; --border:#D0D4D9; --border-d:#B0B6BC;
+  --text:#1C2226; --text-2:#5A6470; --text-3:#8A949E;
+  --ok-bg:#EAF5EC; --ok-text:#1E6B2E; --ok-bd:#A8D5AE;
+  --warn-bg:#FEF9EC; --warn-text:#8A5C00; --warn-bd:#ECD98A;
+  --err-bg:#FDEDED; --err-text:#B72020; --err-bd:#F5AAAA;
+  --nav-h:40px; --radius:4px;
+  --font:'IBM Plex Sans',sans-serif; --mono:'IBM Plex Mono',monospace;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:var(--font);font-size:12px;color:var(--text);background:var(--bg);min-height:100vh;line-height:1.35;}
+
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;height:var(--nav-h);background:var(--accent-d);display:flex;align-items:center;padding:0 16px;gap:6px;z-index:200;border-bottom:2px solid var(--accent);}
+.nav-brand{font-family:var(--mono);font-size:11px;font-weight:600;color:rgba(255,255,255,.9);letter-spacing:.06em;text-transform:uppercase;padding-right:12px;border-right:1px solid rgba(255,255,255,.2);white-space:nowrap;}
+nav a{font-size:11px;font-weight:500;color:rgba(255,255,255,.65);text-decoration:none;padding:5px 11px;border-radius:3px;white-space:nowrap;transition:.15s;}
+nav a:hover{background:rgba(255,255,255,.12);color:white;}
+nav a.active{background:rgba(255,255,255,.18);color:white;font-weight:700;}
+.nav-sep{width:1px;height:20px;background:rgba(255,255,255,.2);}
+.nav-end{margin-left:auto;display:flex;align-items:center;gap:10px;}
+.live-dot{width:6px;height:6px;border-radius:50%;background:#4ADE80;box-shadow:0 0 6px #4ADE80;display:none;}
+#syncStatus{font-size:11px;font-family:var(--mono);color:rgba(255,255,255,.55);}
+#syncStatus.sync-ok{color:#4ADE80;}
+#syncStatus.sync-error{color:#F87171;}
+
+/* LAYOUT */
+.layout{padding:calc(var(--nav-h) + 20px) 20px 40px;max-width:1440px;margin:0 auto;display:flex;flex-direction:column;gap:0;}
+.section-page{display:none;flex-direction:column;gap:0;}
+.section-page.active{display:flex;}
+
+/* CARDS */
+.card{background:var(--surface);border:1px solid var(--border);overflow:hidden;}
+.card:first-child{border-radius:var(--radius) var(--radius) 0 0;}
+.card:last-child{border-radius:0 0 var(--radius) var(--radius);}
+.card + .card{border-top:none;}
+.card-body{padding:14px 16px 16px;}
+
+/* DOC HEADER */
+.doc-header{display:grid;grid-template-columns:90px 1fr auto;border-bottom:1px solid var(--border);}
+.logo-box{background:var(--accent);display:flex;align-items:center;justify-content:center;border-right:1px solid var(--border);}
+.logo-text{font-family:var(--mono);font-size:18px;font-weight:600;color:white;letter-spacing:.08em;}
+.doc-title-area{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:10px 20px;border-right:1px solid var(--border);}
+.doc-title{font-size:14px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;}
+.doc-subtitle{font-size:12px;color:var(--text-2);margin-top:3px;}
+.doc-meta{display:grid;grid-template-columns:1fr 1fr;}
+.meta-cell{padding:6px 12px;min-width:110px;border-left:1px solid var(--border);display:flex;flex-direction:column;gap:1px;}
+.meta-cell:nth-child(1),.meta-cell:nth-child(2){border-bottom:1px solid var(--border);}
+.meta-label{font-size:9px;color:var(--text-3);text-transform:uppercase;letter-spacing:.07em;}
+.meta-value{font-family:var(--mono);font-size:12px;font-weight:600;}
+
+/* SECTION TITLE */
+.sec-title{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);padding-bottom:6px;margin-bottom:12px;border-bottom:1.5px solid var(--accent-l);display:flex;align-items:center;gap:6px;}
+.sec-title::before{content:"";width:3px;height:12px;background:var(--accent);border-radius:2px;}
+.sec-title .sync-inline{margin-left:auto;font-family:var(--mono);font-size:10.5px;color:var(--text-3);text-transform:none;letter-spacing:0;font-weight:500;}
+.sync-inline.dirty{color:var(--warn-text);}
+.sync-inline.ok{color:var(--ok-text);}
+
+/* KPI STRIP */
+.kpi-row{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-bottom:14px;}
+.kpi-card{border:1px solid var(--border);border-radius:var(--radius);padding:8px 10px;background:var(--bg);}
+.kpi-num{font-family:var(--mono);font-size:18px;font-weight:700;color:var(--accent-d);}
+.kpi-lbl{font-size:9.5px;color:var(--text-2);text-transform:uppercase;letter-spacing:.04em;margin-top:2px;}
+
+/* BUTTONS */
+.btn{height:30px;padding:0 12px;font-size:12px;font-weight:600;border-radius:var(--radius);border:1px solid;display:inline-flex;align-items:center;gap:5px;cursor:pointer;transition:filter .1s;background:var(--surface);}
+.btn:hover{filter:brightness(.93);}
+.btn-primary{background:var(--accent);border-color:var(--accent);color:#fff;}
+.btn-ok{background:var(--ok-bg);border-color:var(--ok-bd);color:var(--ok-text);}
+.btn-warn{background:var(--warn-bg);border-color:var(--warn-bd);color:var(--warn-text);}
+.btn-danger{background:var(--err-bg);border-color:var(--err-bd);color:var(--err-text);}
+.btn-light{background:var(--surface);border-color:var(--border);color:var(--text-2);}
+.btn-sm{height:22px;padding:0 6px;font-size:10px;}
+.btn-icon{width:24px;height:22px;padding:0;justify-content:center;}
+.toolbar{display:flex;gap:8px;margin-bottom:12px;justify-content:flex-end;}
+.add-row-btn{width:100%;height:34px;border:1.5px dashed var(--accent-l);border-radius:var(--radius);color:var(--accent);font-size:12px;font-weight:600;background:transparent;cursor:pointer;margin-top:8px;}
+.add-row-btn:hover{background:var(--accent-l);}
+.del-btn{width:22px;height:22px;border:1px solid var(--err-bd);background:var(--err-bg);color:var(--err-text);font-size:14px;font-weight:700;border-radius:3px;cursor:pointer;line-height:1;}
+.del-btn:hover{filter:brightness(.95);}
+
+/* TABLE */
+.tbl-wrap{overflow-x:auto;}
+table.tbl{border-collapse:collapse;width:100%;table-layout:fixed;}
+.tbl th{background:var(--bg);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-2);padding:5px 6px;border-top:1px solid var(--border);border-bottom:1px solid var(--border-d);border-right:1px solid var(--border);white-space:normal;word-break:break-word;}
+.tbl th:last-child{border-right:none;}
+.tbl td{padding:3px 6px;border-bottom:1px solid var(--border);border-right:1px solid var(--border);font-size:11px;vertical-align:middle;}
+.tbl td:last-child{border-right:none;}
+.tbl tr:last-child td{border-bottom:none;}
+.tbl tr:hover td{background:#F4F8FA;}
+.tbl tr.row-anulado td{background:#FAFAFA;color:var(--text-3);}
+.tbl tr.row-anulado input,.tbl tr.row-anulado select,.tbl tr.row-anulado textarea{color:var(--text-3);text-decoration:line-through;}
+.row-num{font-family:var(--mono);font-size:11px;color:var(--text-3);text-align:center;display:block;}
+
+.ti,.ts,.ta{width:100%;border:1px solid transparent;background:transparent;border-radius:3px;padding:3px 5px;font-family:var(--font);font-size:11px;color:var(--text);}
+.ti:hover,.ts:hover,.ta:hover{border-color:var(--border);background:white;}
+.ti:focus,.ts:focus,.ta:focus{outline:none;border-color:var(--accent);background:white;box-shadow:0 0 0 2px rgba(14,107,138,.08);}
+.ta{resize:none;overflow:hidden;min-height:28px;}
+.ts{appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='9' height='6'%3E%3Cpath d='M0 0l4.5 6L9 0z' fill='%235A6470'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 6px center;padding-right:22px;}
+.date-wrap{position:relative;display:flex;}
+.date-picker-hidden{position:absolute;right:0;top:0;width:20px;height:100%;opacity:0;pointer-events:none;}
+.money-in{text-align:right;font-family:var(--mono);}
+.oc-in{text-align:center;font-family:var(--mono);}
+
+/* ESTADO PEDIDO */
+.pe-reclamo{background-color:var(--err-bg)!important;color:var(--err-text)!important;border-color:var(--err-bd)!important;}
+.pe-pagado{background-color:#F4ECF7!important;color:#6C3483!important;border-color:#D2B4DE!important;}
+.pe-pendpago{background-color:var(--ok-bg)!important;color:var(--ok-text)!important;border-color:var(--ok-bd)!important;}
+.pe-proceso{background-color:#E3F2FD!important;color:#1565C0!important;border-color:#AED6F1!important;}
+.pe-cotiz{background-color:var(--warn-bg)!important;color:var(--warn-text)!important;border-color:var(--warn-bd)!important;}
+.pe-noiniciado{background-color:#F0F1F3!important;color:var(--text-2)!important;border-color:var(--border)!important;}
+select option{background-color:#fff!important;background-image:none!important;color:var(--text)!important;font-weight:400!important;}
+.sel-wrap{position:relative;display:block;}
+.sel-wrap select.sel-estado{background-image:none!important;padding-right:18px;padding-left:4px;font-size:10px!important;}
+.sel-arrow{position:absolute;right:5px;top:50%;transform:translateY(-50%);width:0;height:0;border-left:4px solid transparent;border-right:4px solid transparent;border-top:5px solid var(--text-2);pointer-events:none;}
+.pe-reclamo + .sel-arrow{border-top-color:var(--err-text);}
+.pe-pagado + .sel-arrow{border-top-color:#6C3483;}
+.pe-pendpago + .sel-arrow{border-top-color:var(--ok-text);}
+.pe-proceso + .sel-arrow{border-top-color:#1565C0;}
+.pe-cotiz + .sel-arrow{border-top-color:var(--warn-text);}
+.pe-noiniciado + .sel-arrow{border-top-color:var(--text-2);}
+
+.badge{display:inline-block;border-radius:10px;font-size:11px;font-weight:700;padding:2px 8px;}
+.badge-anulado{background:var(--err-bg);color:var(--err-text);border:1px solid var(--err-bd);}
+.acc-cell{display:flex;flex-direction:column;gap:3px;align-items:flex-start;}
+.acc-btns{display:flex;gap:4px;flex-wrap:wrap;}
+.acc-info{font-size:10.5px;color:var(--err-text);line-height:1.3;}
+.copy-flash{color:var(--ok-text)!important;}
+
+/* EMAIL VALIDATION */
+.ti.email-invalid{border-color:var(--err-bd)!important;background:var(--err-bg)!important;}
+.email-msg{font-size:10px;color:var(--err-text);margin-top:2px;display:none;}
+.email-msg.show{display:block;}
+
+/* MODAL */
+.overlay{position:fixed;inset:0;background:rgba(20,26,30,.45);display:none;align-items:center;justify-content:center;z-index:500;}
+.overlay.open{display:flex;}
+.modal{background:var(--surface);border-radius:var(--radius);width:420px;max-width:92vw;border:1px solid var(--border);}
+.modal-head{padding:12px 16px;border-bottom:1px solid var(--border);font-size:12.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--accent-d);}
+.modal-body{padding:14px 16px;display:flex;flex-direction:column;gap:10px;}
+.modal-body label{font-size:10.5px;font-weight:600;color:var(--text-2);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:4px;}
+.modal-body input,.modal-body textarea{width:100%;border:1px solid var(--border);border-radius:3px;padding:7px 9px;font-family:var(--font);font-size:12.5px;}
+.modal-body textarea{resize:vertical;min-height:60px;}
+.modal-foot{padding:10px 16px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px;}
+
+.no-print{}
+
+@media print {
+  @page { size: A3 landscape; margin: 8mm; }
+  nav, .no-print { display: none !important; }
+  body { background: white; }
+  .layout { padding: 0; gap: 24px; }
+  .card { box-shadow: none; }
+  * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <span class="nav-brand">SGC — BT</span>
+  <div class="nav-sep"></div>
+  <a href="#sec-pedidos" class="active" onclick="return goSection(this,'sec-pedidos')">Pedidos de Cirugía</a>
+  <a href="#sec-proveedores" onclick="return goSection(this,'sec-proveedores')">Proveedores CX</a>
+  <div class="nav-end">
+    <button class="btn btn-light btn-sm no-print" onclick="window.print()">Imprimir</button>
+    <div class="live-dot" id="liveDot"></div>
+    <span id="syncStatus">—</span>
+  </div>
+</nav>
+
+<div class="layout">
+
+  <!-- ═══════════ SECCIÓN 1: PEDIDOS DE CIRUGÍA ═══════════ -->
+  <div class="section-page active" id="sec-pedidos">
+    <div class="card">
+      <div class="doc-header">
+        <div class="logo-box"><span class="logo-text">BT</span></div>
+        <div class="doc-title-area">
+          <div class="doc-title">Pedidos de Cirugía</div>
+          <div class="doc-subtitle">Solicitud, seguimiento y estado de pedidos de productos para cirugías</div>
+        </div>
+        <div class="doc-meta">
+          <div class="meta-cell"><span class="meta-label">Aprobación</span><span class="meta-value">—</span></div>
+          <div class="meta-cell"><span class="meta-label">Entrada en vigor</span><span class="meta-value">28/07/2026</span></div>
+          <div class="meta-cell"><span class="meta-label">Código</span><span class="meta-value">REG-013</span></div>
+          <div class="meta-cell"><span class="meta-label">Versión</span><span class="meta-value">01</span></div>
+        </div>
+      </div>
+
+      <div class="card-body">
+        <div class="sec-title">Pedidos<span class="sync-inline" id="ped-st">—</span></div>
+
+        <div class="kpi-row">
+          <div class="kpi-card"><div class="kpi-num" id="k-total">0</div><div class="kpi-lbl">Total</div></div>
+          <div class="kpi-card"><div class="kpi-num" id="k-reclamo">0</div><div class="kpi-lbl">Reclamo</div></div>
+          <div class="kpi-card"><div class="kpi-num" id="k-pendpago">0</div><div class="kpi-lbl">Pend. de pago</div></div>
+          <div class="kpi-card"><div class="kpi-num" id="k-proceso">0</div><div class="kpi-lbl">En proceso</div></div>
+          <div class="kpi-card"><div class="kpi-num" id="k-cotiz">0</div><div class="kpi-lbl">Bajo cotización</div></div>
+          <div class="kpi-card"><div class="kpi-num" id="k-pagado">0</div><div class="kpi-lbl">Pagado</div></div>
+        </div>
+
+        <div class="tbl-wrap">
+          <table class="tbl">
+            <colgroup>
+              <col style="width:2%">  <!-- #             -->
+              <col style="width:9%">  <!-- Solicitante   -->
+              <col style="width:6%">  <!-- Fecha pedido  -->
+              <col style="width:7%">  <!-- Paciente      -->
+              <col style="width:7%">  <!-- Médico        -->
+              <col style="width:7%">  <!-- Lugar de CX   -->
+              <col style="width:6%">  <!-- Fecha CX      -->
+              <col style="width:11%"> <!-- Producto      -->
+              <col style="width:11%">  <!-- Proveedor     -->
+              <col style="width:6%">  <!-- Fecha retiro  -->
+              <col style="width:7%">  <!-- Costo sin IVA -->
+              <col style="width:4%">  <!-- OC            -->
+              <col style="width:9%">  <!-- Estado        -->
+              <col style="width:9%"> <!-- Acciones      -->
+            </colgroup>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Solicitante</th>
+                <th>Fecha pedido</th>
+                <th>Paciente</th>
+                <th>Médico</th>
+                <th>Lugar de CX</th>
+                <th>Fecha CX</th>
+                <th>Producto</th>
+                <th>Proveedor</th>
+                <th>Fecha retiro</th>
+                <th>Costo sin IVA</th>
+                <th>OC</th>
+                <th>Estado</th>
+                <th class="no-print">Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="ped-tbody"></tbody>
+          </table>
+        </div>
+        <button class="add-row-btn no-print" onclick="Ped.addRow()">+ Agregar pedido</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════ SECCIÓN 2: PROVEEDORES CX ═══════════ -->
+  <div class="section-page" id="sec-proveedores">
+    <div class="card">
+      <div class="doc-header">
+        <div class="logo-box"><span class="logo-text">BT</span></div>
+        <div class="doc-title-area">
+          <div class="doc-title">Proveedores CX</div>
+          <div class="doc-subtitle">Listado de proveedores de productos e insumos para cirugías</div>
+        </div>
+        <div class="doc-meta">
+          <div class="meta-cell"><span class="meta-label">Aprobación</span><span class="meta-value">—</span></div>
+          <div class="meta-cell"><span class="meta-label">Entrada en vigor</span><span class="meta-value">28/07/2026</span></div>
+          <div class="meta-cell"><span class="meta-label">Código</span><span class="meta-value">REG-013</span></div>
+          <div class="meta-cell"><span class="meta-label">Versión</span><span class="meta-value">01</span></div>
+        </div>
+      </div>
+
+      <div class="card-body">
+        <div class="sec-title">Proveedores<span class="sync-inline" id="prov-st">—</span></div>
+        <div class="tbl-wrap">
+          <table class="tbl">
+            <colgroup>
+              <col style="width:3%">  <!-- #         -->
+              <col style="width:20%"> <!-- Empresa   -->
+              <col style="width:25%"> <!-- Correo    -->
+              <col style="width:20%"> <!-- Contacto  -->
+              <col style="width:27%"> <!-- Categoría -->
+              <col style="width:5%">  <!-- Eliminar  -->
+            </colgroup>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Empresa</th>
+                <th>Correo</th>
+                <th>Contacto</th>
+                <th>Categoría</th>
+                <th class="no-print">—</th>
+              </tr>
+            </thead>
+            <tbody id="prov-tbody"></tbody>
+          </table>
+        </div>
+        <button class="add-row-btn no-print" onclick="Prov.addRow()">+ Agregar proveedor</button>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /layout -->
+
+<!-- MODAL ANULAR -->
+<div class="overlay no-print" id="anularOverlay">
+  <div class="modal">
+    <div class="modal-head">Anular pedido</div>
+    <div class="modal-body">
+      <div>
+        <label>Quién anula</label>
+        <input type="text" id="anularQuien" placeholder="Nombre de quien anula el pedido">
+      </div>
+      <div>
+        <label>Motivo</label>
+        <textarea id="anularMotivo" placeholder="Motivo de la anulación"></textarea>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-light" onclick="cerrarAnularModal()">Cancelar</button>
+      <button class="btn btn-danger" onclick="confirmarAnular()">Anular pedido</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ══════════════════════ FIREBASE / STORAGE ══════════════════════ */
+const FB_URL   = "https://sgc-bt-default-rtdb.firebaseio.com";
+const FB_PED   = "/pedcx/pedidos";
+const FB_PROV  = "/pedcx/proveedores";
+const LS_PED   = "pedcx_ped_v1";
+const LS_PROV  = "pedcx_prov_v1";
+
+async function fbGet(path){
+  const r = await fetch(FB_URL + path + ".json");
+  if(!r.ok) throw new Error("fbGet " + r.status);
+  return r.json();
+}
+async function fbSet(path, data){
+  const r = await fetch(FB_URL + path + ".json", {
+    method:"PUT", headers:{"Content-Type":"application/json"},
+    body: JSON.stringify(data)
+  });
+  if(!r.ok) throw new Error("fbSet " + r.status);
+  return r.json();
+}
+function lsGet(k){ try{ return JSON.parse(localStorage.getItem(k)||"null"); }catch(e){ return null; } }
+function lsSet(k,v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
+
+function setSyncStatus(text, cls=""){
+  const el = document.getElementById("syncStatus");
+  const dot = document.getElementById("liveDot");
+  if(el){ el.textContent = text; el.className = cls; }
+  if(dot) dot.style.display = cls === "sync-ok" ? "block" : "none";
+}
+function setInlineStatus(id, text, cls=""){
+  const el = document.getElementById(id);
+  if(el){ el.textContent = text; el.className = "sync-inline " + cls; }
+}
+function mkDirty(id){ setInlineStatus(id, "Cambios sin guardar", "dirty"); }
+function mkSaved(id){ setInlineStatus(id, "✓ Guardado " + new Date().toLocaleTimeString(), "ok"); }
+
+/* ══════════════════════ HELPERS GENERALES ══════════════════════ */
+function esc(s){ return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
+function autoGrow(el){ el.style.height="auto"; el.style.height=el.scrollHeight+"px"; }
+document.addEventListener("input", e=>{ if(e.target.classList.contains("ta")) autoGrow(e.target); });
+
+function toDisplay(iso){
+  if(!iso) return "";
+  const p=iso.split("-");
+  if(p.length===3) return p[2]+"/"+p[1]+"/"+p[0].slice(2);
+  return iso;
+}
+function toISO(dmy){
+  if(!dmy) return "";
+  const p=dmy.split("/");
+  if(p.length!==3) return "";
+  let yyyy=p[2];
+  if(yyyy.length===2) yyyy="20"+yyyy;
+  if(yyyy.length!==4) return "";
+  return yyyy+"-"+p[1].padStart(2,"0")+"-"+p[0].padStart(2,"0");
+}
+function normFecha(v){
+  if(!v) return "";
+  const iso=toISO(v);
+  return iso ? toDisplay(iso) : v;
+}
+function maskFecha(el){
+  let vl=el.value.replace(/\D/g,"").slice(0,6);
+  if(vl.length>4) vl=vl.slice(0,2)+"/"+vl.slice(2,4)+"/"+vl.slice(4);
+  else if(vl.length>2) vl=vl.slice(0,2)+"/"+vl.slice(2);
+  el.value=vl;
+}
+function abrirPickerFecha(inp){
+  const picker=inp.nextElementSibling;
+  if(!picker) return;
+  picker.value=toISO(inp.value);
+  picker.style.pointerEvents="auto"; picker.style.zIndex="9999";
+  try{ picker.showPicker(); }catch(e){ picker.click(); }
+}
+function pickFecha(picker, cb){
+  const inp=picker.previousElementSibling;
+  if(inp && picker.value){ inp.value=toDisplay(picker.value); if(cb) cb(inp); }
+  picker.style.pointerEvents="none"; picker.style.zIndex="";
+}
+function hoyDisplay(){
+  const d=new Date();
+  const p=n=>String(n).padStart(2,"0");
+  return p(d.getDate())+"/"+p(d.getMonth()+1)+"/"+String(d.getFullYear()).slice(2);
+}
+function maskMoney(el){
+  let digits = el.value.replace(/\D/g,"");
+  if(!digits){ el.value=""; return; }
+  el.value = "$ " + Number(digits).toLocaleString("es-AR");
+}
+function moneyDigits(v){ return String(v||"").replace(/\D/g,""); }
+function maskOC(el){ el.value = el.value.replace(/\D/g,""); }
+function validEmailFmt(v){ return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v); }
+
+/* ══════════════════════ CONSTANTES ══════════════════════ */
+const SOLICITANTES = ["Candela","Diego Varela","Luis","Cinthia","Martin Michanie"];
+const PED_ESTADOS = [
+  ["reclamo",    "RECLAMO"],
+  ["pendpago",   "PEND DE PAGO"],
+  ["proceso",    "EN PROCESO"],
+  ["cotiz",      "BAJO COTIZACION"],
+  ["noiniciado", "NO INICIADO"],
+  ["pagado",     "PAGADO"]
+];
+const PED_ORDEN = { reclamo:1, pendpago:2, proceso:3, cotiz:4, noiniciado:5, pagado:6 };
+
+const PED_DELETE_KEY = "2026"; // clave para poder eliminar un pedido de forma permanente (cambiarla acá si querés otra)
+const COPY_ICON = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>`;
+const CHECK_ICON = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
+
+const PROV_DEFAULT = [
+ ["Axmec","ventasbsas.axm@gmail.com","daniela","osteosintesis"],
+ ["Bioprotece","ventas@bioprotece.com","","varios"],
+ ["Biox","administracion@biox-sa.com","","columna+cmf"],
+ ["Biovand","ventas@biovandgroup.com.ar","","osteosintesis+descartables"],
+ ["Brainmedical","ventas@brainmedical.com.ar","","cmf"],
+ ["Biomedici","infobiomedici@gmail.com","","neuro+descartables +motores"],
+ ["Biolap SA","sgodoy@biolapsa.com","","importados"],
+ ["Corpomedica","asistentecolumna@corpomedica.com.ar","Fatima Lombardo","tutores + importados"],
+ ["Cirugia Centro","ventas@cirugiacentro.com.ar","","osteosintesis (PEDIATRICO NADA)"],
+ ["CDA","","","cmf importado"],
+ ["CLP","","",""],
+ ["CMP","administracion@implantescmp.com","","hombro reverso"],
+ ["Promedon","","",""],
+ ["Roamed","comercial@roamed.com.ar","","3D"],
+ ["Ip Magna","","","cadera rodilla impo"],
+ ["Cirugia Alemana","","","varios"],
+ ["Prima","","",""],
+ ["Osteolife","adrian.v@osteolife.com.ar","",""],
+ ["Caimed","","","cmf micro fragmento y osteo"],
+ ["Grupo Rot","","","cmf micro fragmento y osteo"],
+ ["Marcelo Dichiara CDH","","","cdh"],
+ ["Bodach","","","osteosintesis"],
+ ["Novax","info@novaxdma.com","","columna"],
+ ["Kinetical","cotizaciones@kntmedical.com","","columna y 3d y enc"],
+ ["Medispine","ventas@medispinesrl.com","","columna"],
+ ["Orlosh","","","importados"],
+ ["Spine","spine@spinearg.com","","columna"],
+ ["Valmi","info@valmi.com.ar","","artroscopia"],
+ ["Kinemin","cirugiakinemin@gmail.com","","equipamiento y neuro"],
+ ["Necod","comercial@necod.com.ar","","equipamiento y neuro"],
+ ["Total Bone Supply","backup@totalbonesupply.com","","cadera"],
+ ["Equimedica","cirugia@equimedica.com.ar","","mano y pie"],
+ ["Biopolimeros","ventas@biopolimeros.com.ar","","medpor+cmf"],
+ ["Implanmed","info@implanmed.com.ar","","artroscopia"],
+ ["Hexast","info@hexast.com","Dante","artroscopia"],
+ ["Implansur","implansur.cotizaciones@gmail.com","","cadera y rodilla"],
+ ["Mh Protesis","","","protesis y ortesis"],
+ ["Fixamed","info@fixamed.com.ar","","artroscopia"],
+ ["Crosmed","nrico@crosmed.com","","importados y pediatricos"],
+ ["Bernat","mbazan@ortopediabernat.com.ar","","protesis y ortesis"],
+ ["Mausar","","","protesis y ortesis"],
+ ["Biogamma","infobiogamma@gmai.com","","mendoza"],
+ ["Olympia","ccejas@olympiasalud.com.ar","54 9 3513 11-5039 / +54 9 3513 25-4376","cadera rodilla"],
+ ["mediplus","","","parana concordia y santa fe"],
+ ["magnus","","","salta"],
+ ["Imeco","","","Cadera/columna/osteosinitesis"]
+].map(r=>({empresa:r[0],correo:r[1],contacto:r[2],categoria:r[3]}));
+
+/* ══════════════════════ PEDIDOS ══════════════════════ */
+let anularTargetTr = null;
+
+const Ped = {
+  solicitanteSelect(cur){
+    const opts = SOLICITANTES.map(s=>`<option value="${esc(s)}"${s===cur?" selected":""}>${esc(s)}</option>`).join("");
+    return `<select class="ts sol-sel" onchange="mkDirty('ped-st')"><option value="">— solicitante —</option>${opts}</select>`;
+  },
+  proveedorSelect(cur){
+    const provs = [...document.querySelectorAll("#prov-tbody tr")].map(tr=>tr.querySelector(".prov-empresa")?.value||"").filter(Boolean);
+    const opts = provs.map(p=>`<option value="${esc(p)}"${p===cur?" selected":""}>${esc(p)}</option>`).join("");
+    return `<select class="ts prov-sel" onchange="mkDirty('ped-st')"><option value="">— proveedor —</option>${opts}</select>`;
+  },
+  estSelect(cur){
+    cur = cur || "noiniciado";
+    const opts = PED_ESTADOS.map(([v,label])=>`<option value="${v}"${v===cur?" selected":""}>${label}</option>`).join("");
+    return `<div class="sel-wrap"><select class="ts sel-estado pe-${cur}" onchange="Ped.onEstadoChange(this)">${opts}</select><span class="sel-arrow"></span></div>`;
+  },
+  onEstadoChange(sel){
+    PED_ESTADOS.forEach(([v])=> sel.classList.remove("pe-"+v));
+    sel.classList.add("pe-"+sel.value);
+    mkDirty("ped-st");
+    Ped.sortRows();
+  },
+  sortRows(){
+    const tb=document.getElementById("ped-tbody");
+    const trs=[...tb.querySelectorAll("tr")];
+    trs.sort((a,b)=>{
+      const va=a.querySelector(".sel-estado")?.value||"noiniciado";
+      const vb=b.querySelector(".sel-estado")?.value||"noiniciado";
+      const oa=PED_ORDEN[va]||99, ob=PED_ORDEN[vb]||99;
+      if(oa!==ob) return oa-ob;
+      const fa=toISO(a.querySelector(".ped-fcx")?.value) || "9999-12-31";
+      const fb=toISO(b.querySelector(".ped-fcx")?.value) || "9999-12-31";
+      return fa.localeCompare(fb);
+    });
+    trs.forEach(tr=>tb.appendChild(tr));
+    Ped._renum();
+    Ped.updateKpis();
+  },
+  _renum(){
+    [...document.querySelectorAll("#ped-tbody tr")].forEach((r,i)=>{
+      const c=r.querySelector(".row-num"); if(c) c.textContent=i+1;
+    });
+  },
+  updateKpis(){
+    const trs=[...document.querySelectorAll("#ped-tbody tr")];
+    const counts={reclamo:0,pendpago:0,proceso:0,cotiz:0,pagado:0};
+    let total=0;
+    trs.forEach(tr=>{
+      if(tr.classList.contains("row-anulado")) return;
+      total++;
+      const v=tr.querySelector(".sel-estado")?.value;
+      if(counts[v]!==undefined) counts[v]++;
+    });
+    document.getElementById("k-total").textContent=total;
+    document.getElementById("k-reclamo").textContent=counts.reclamo;
+    document.getElementById("k-pendpago").textContent=counts.pendpago;
+    document.getElementById("k-proceso").textContent=counts.proceso;
+    document.getElementById("k-cotiz").textContent=counts.cotiz;
+    document.getElementById("k-pagado").textContent=counts.pagado;
+  },
+  _buildTr(d){
+    d=d||{};
+    const fpedido=normFecha(d.fpedido), fcx=normFecha(d.fcx), fretiro=normFecha(d.fretiro);
+    const tr=document.createElement("tr");
+    if(d.anulado && d.anulado.si) tr.classList.add("row-anulado");
+    tr.innerHTML=`
+      <td><span class="row-num"></span></td>
+      <td>${Ped.solicitanteSelect(d.solicitante||"")}</td>
+      <td><div class="date-wrap">
+        <input class="ti ped-fpedido" type="text" inputmode="numeric" maxlength="8" placeholder="dd/mm/aa"
+          value="${esc(fpedido)}" oninput="mkDirty('ped-st');maskFecha(this)" onclick="abrirPickerFecha(this)">
+        <input class="date-picker-hidden" type="date" tabindex="-1" onchange="pickFecha(this,()=>mkDirty('ped-st'))">
+      </div></td>
+      <td style="width:1%"><textarea class="ta cta ped-paciente" rows="1" oninput="mkDirty('ped-st');autoGrow(this)">${esc(d.paciente||"")}</textarea></td>
+      <td style="width:1%"><textarea class="ta cta ped-medico" rows="1" oninput="mkDirty('ped-st');autoGrow(this)">${esc(d.medico||"")}</textarea></td>
+      <td style="width:1%"><textarea class="ta cta ped-lugar" rows="1" oninput="mkDirty('ped-st');autoGrow(this)">${esc(d.lugar||"")}</textarea></td>
+      <td><div class="date-wrap">
+        <input class="ti ped-fcx" type="text" inputmode="numeric" maxlength="8" placeholder="dd/mm/aa"
+          value="${esc(fcx)}" oninput="mkDirty('ped-st');maskFecha(this)" onclick="abrirPickerFecha(this)" onblur="Ped.sortRows()">
+        <input class="date-picker-hidden" type="date" tabindex="-1" onchange="pickFecha(this,()=>mkDirty('ped-st'));Ped.sortRows()">
+      </div></td>
+      <td style="width:1%"><textarea class="ta cta ped-producto" rows="1" oninput="mkDirty('ped-st');autoGrow(this)">${esc(d.producto||"")}</textarea></td>
+      <td>${Ped.proveedorSelect(d.proveedor||"")}</td>
+      <td><div class="date-wrap">
+        <input class="ti ped-fretiro" type="text" inputmode="numeric" maxlength="8" placeholder="dd/mm/aa"
+          value="${esc(fretiro)}" oninput="mkDirty('ped-st');maskFecha(this)" onclick="abrirPickerFecha(this)">
+        <input class="date-picker-hidden" type="date" tabindex="-1" onchange="pickFecha(this,()=>mkDirty('ped-st'))">
+      </div></td>
+      <td><input class="ti money-in ped-costo" type="text" inputmode="numeric" value="${d.costo?('$ '+Number(d.costo).toLocaleString('es-AR')):''}" oninput="mkDirty('ped-st');maskMoney(this)"></td>
+      <td><input class="ti oc-in ped-oc" type="text" inputmode="numeric" value="${esc(d.oc||"")}" oninput="mkDirty('ped-st');maskOC(this)"></td>
+      <td>${Ped.estSelect(d.estado)}</td>
+      <td class="no-print">
+        <div class="acc-cell">
+          <div class="acc-btns">
+            <button class="btn btn-light btn-sm btn-icon" onclick="Ped.copiar(this)" title="Copiar" aria-label="Copiar">${COPY_ICON}</button>
+            <button class="btn btn-danger btn-sm" onclick="Ped.toggleAnular(this)">${d.anulado&&d.anulado.si?"Reactivar":"Anular"}</button>
+            <button class="del-btn" onclick="Ped.eliminarFila(this)" title="Eliminar (requiere clave)" aria-label="Eliminar pedido">×</button>
+          </div>
+          ${d.anulado&&d.anulado.si?`<div class="acc-info">Anulado por ${esc(d.anulado.quien||"—")}: ${esc(d.anulado.motivo||"—")}</div>`:""}
+        </div>
+      </td>`;
+    return tr;
+  },
+  copiar(btn){
+    const tr=btn.closest("tr");
+    const g=(cls)=>tr.querySelector(cls)?.value||"";
+    const campos = [
+      ["Producto", g(".ped-producto")],
+      ["Nombre del paciente", g(".ped-paciente")],
+      ["Nombre del médico", g(".ped-medico")],
+      ["Lugar de CX", g(".ped-lugar")],
+      ["Fecha de CX", g(".ped-fcx")]
+    ];
+    const faltantes = campos.filter(([,v])=>!v.trim()).map(([label])=>label);
+    if(faltantes.length){
+      alert("Faltan completar los siguientes datos antes de copiar:\n\n— " + faltantes.join("\n— "));
+      return;
+    }
+    const texto = `Material: ${g(".ped-producto")}\nNombre paciente: ${g(".ped-paciente")}\nNombre medico: ${g(".ped-medico")}\nLugar de CX: ${g(".ped-lugar")}\nFecha CX: ${g(".ped-fcx")}`;
+    const done=()=>{ const old=btn.innerHTML; btn.innerHTML=CHECK_ICON; btn.classList.add("copy-flash"); setTimeout(()=>{ btn.innerHTML=old; btn.classList.remove("copy-flash"); },1400); };
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(texto).then(done).catch(()=>fallbackCopy(texto,done));
+    } else fallbackCopy(texto,done);
+  },
+  toggleAnular(btn){
+    const tr=btn.closest("tr");
+    if(tr.classList.contains("row-anulado")){
+      if(!confirm("¿Reactivar este pedido?")) return;
+      tr.classList.remove("row-anulado");
+      tr.dataset.anuladoQuien=""; tr.dataset.anuladoMotivo="";
+      btn.textContent="Anular";
+      const info=tr.querySelector(".acc-info"); if(info) info.remove();
+      mkDirty("ped-st"); Ped.updateKpis();
+    } else {
+      anularTargetTr = tr;
+      document.getElementById("anularQuien").value="";
+      document.getElementById("anularMotivo").value="";
+      document.getElementById("anularOverlay").classList.add("open");
+    }
+  },
+  eliminarFila(btn){
+    const clave = prompt("Esta acción borra el pedido de forma permanente (también de Firebase).\n\nIngresá la clave para confirmar:");
+    if(clave===null) return;
+    if(clave !== PED_DELETE_KEY){ alert("Clave incorrecta. No se eliminó el pedido."); return; }
+    const tr=btn.closest("tr");
+    tr.remove();
+    Ped._renum();
+    Ped.updateKpis();
+    mkDirty("ped-st");
+    scheduleSavePed();
+  },
+  addRow(){
+    const tb=document.getElementById("ped-tbody");
+    tb.appendChild(Ped._buildTr({fpedido:hoyDisplay(),estado:"noiniciado"}));
+    Ped.sortRows(); mkDirty("ped-st");
+  },
+  _ser(){
+    return [...document.querySelectorAll("#ped-tbody tr")].map(tr=>{
+      const g=(cls)=>tr.querySelector(cls)?.value||"";
+      return {
+        solicitante: tr.querySelector(".sol-sel")?.value || "",
+        fpedido:  g(".ped-fpedido"),
+        paciente: g(".ped-paciente"),
+        medico:   g(".ped-medico"),
+        lugar:    g(".ped-lugar"),
+        fcx:      g(".ped-fcx"),
+        producto: g(".ped-producto"),
+        proveedor: tr.querySelector(".prov-sel")?.value || "",
+        fretiro:  g(".ped-fretiro"),
+        costo:    moneyDigits(g(".ped-costo")),
+        oc:       g(".ped-oc"),
+        estado:   tr.querySelector(".sel-estado")?.value || "noiniciado",
+        anulado: {
+          si: tr.classList.contains("row-anulado"),
+          quien: tr.dataset.anuladoQuien||"",
+          motivo: tr.dataset.anuladoMotivo||""
+        }
+      };
+    });
+  },
+  restore(rows){
+    const tb=document.getElementById("ped-tbody"); tb.innerHTML="";
+    (rows||[]).forEach(d=>{
+      const tr=Ped._buildTr(d);
+      if(d.anulado && d.anulado.si){ tr.dataset.anuladoQuien=d.anulado.quien||""; tr.dataset.anuladoMotivo=d.anulado.motivo||""; }
+      tb.appendChild(tr);
+    });
+    Ped.sortRows();
+    setTimeout(()=>{ tb.querySelectorAll(".cta").forEach(autoGrow); }, 0);
+  },
+  refreshProveedorSelects(){
+    const provs = [...document.querySelectorAll("#prov-tbody tr")].map(tr=>tr.querySelector(".prov-empresa")?.value||"").filter(Boolean);
+    document.querySelectorAll("#ped-tbody .prov-sel").forEach(sel=>{
+      const cur=sel.value;
+      sel.innerHTML = `<option value="">— proveedor —</option>` + provs.map(p=>`<option value="${esc(p)}"${p===cur?" selected":""}>${esc(p)}</option>`).join("");
+      if(provs.includes(cur)) sel.value=cur;
+    });
+  },
+  async save(){
+    const rows=Ped._ser(), pay={rows,ts:Date.now()};
+    lsSet(LS_PED,pay);
+    try{ await fbSet(FB_PED,pay); lastPedTs=pay.ts; setSyncStatus("En vivo","sync-ok"); }
+    catch(e){ setSyncStatus("Sin conexión","sync-error"); }
+    mkSaved("ped-st");
+  }
+};
+
+function fallbackCopy(texto, done){
+  const ta=document.createElement("textarea");
+  ta.value=texto; ta.style.position="fixed"; ta.style.opacity="0";
+  document.body.appendChild(ta); ta.select();
+  try{ document.execCommand("copy"); done(); }catch(e){ alert("No se pudo copiar automáticamente:\n\n"+texto); }
+  document.body.removeChild(ta);
+}
+
+function cerrarAnularModal(){
+  document.getElementById("anularOverlay").classList.remove("open");
+  anularTargetTr=null;
+}
+function confirmarAnular(){
+  const quien=document.getElementById("anularQuien").value.trim();
+  const motivo=document.getElementById("anularMotivo").value.trim();
+  if(!quien || !motivo){ alert("Completá quién anula y el motivo."); return; }
+  if(anularTargetTr){
+    anularTargetTr.classList.add("row-anulado");
+    anularTargetTr.dataset.anuladoQuien=quien;
+    anularTargetTr.dataset.anuladoMotivo=motivo;
+    const btn=anularTargetTr.querySelector(".acc-btns .btn-danger");
+    if(btn) btn.textContent="Reactivar";
+    let acc=anularTargetTr.querySelector(".acc-cell");
+    let info=acc.querySelector(".acc-info");
+    if(!info){ info=document.createElement("div"); info.className="acc-info"; acc.appendChild(info); }
+    info.textContent = `Anulado por ${quien}: ${motivo}`;
+    mkDirty("ped-st"); Ped.updateKpis();
+  }
+  cerrarAnularModal();
+}
+document.getElementById("anularOverlay").addEventListener("click", function(e){ if(e.target===this) cerrarAnularModal(); });
+
+/* ══════════════════════ PROVEEDORES ══════════════════════ */
+const Prov = {
+  _buildTr(d){
+    d=d||{};
+    const tr=document.createElement("tr");
+    tr.innerHTML=`
+      <td><span class="row-num"></span></td>
+      <td><input class="ti prov-empresa" type="text" value="${esc(d.empresa||"")}" oninput="mkDirty('prov-st');Ped.refreshProveedorSelects()"></td>
+      <td>
+        <input class="ti prov-correo" type="text" value="${esc(d.correo||"")}" placeholder="nombre@dominio.com"
+          oninput="mkDirty('prov-st')" onblur="Prov.validarCorreo(this)">
+        <div class="email-msg">Correo con formato inválido</div>
+      </td>
+      <td><input class="ti prov-contacto" type="text" value="${esc(d.contacto||"")}" oninput="mkDirty('prov-st')"></td>
+      <td><input class="ti prov-categoria" type="text" value="${esc(d.categoria||"")}" oninput="mkDirty('prov-st')"></td>
+      <td class="no-print" style="text-align:center"><button class="del-btn" onclick="Prov.elim(this)">×</button></td>`;
+    return tr;
+  },
+  validarCorreo(inp){
+    const msg=inp.parentElement.querySelector(".email-msg");
+    const v=inp.value.trim();
+    if(!v){ inp.classList.remove("email-invalid"); msg.classList.remove("show"); return; }
+    if(!validEmailFmt(v)){ inp.classList.add("email-invalid"); msg.classList.add("show"); }
+    else { inp.classList.remove("email-invalid"); msg.classList.remove("show"); }
+  },
+  _renum(){
+    [...document.querySelectorAll("#prov-tbody tr")].forEach((r,i)=>{
+      const c=r.querySelector(".row-num"); if(c) c.textContent=i+1;
+    });
+  },
+  addRow(){
+    const tb=document.getElementById("prov-tbody");
+    tb.appendChild(Prov._buildTr({}));
+    Prov._renum(); mkDirty("prov-st");
+  },
+  elim(btn){
+    const tr=btn.closest("tr");
+    if(!confirm("¿Eliminar este proveedor?")) return;
+    tr.remove(); Prov._renum(); mkDirty("prov-st");
+    Ped.refreshProveedorSelects();
+    scheduleSaveProv();
+  },
+  _ser(){
+    return [...document.querySelectorAll("#prov-tbody tr")].map(tr=>({
+      empresa: tr.querySelector(".prov-empresa")?.value||"",
+      correo: tr.querySelector(".prov-correo")?.value||"",
+      contacto: tr.querySelector(".prov-contacto")?.value||"",
+      categoria: tr.querySelector(".prov-categoria")?.value||""
+    }));
+  },
+  restore(rows){
+    const tb=document.getElementById("prov-tbody"); tb.innerHTML="";
+    const data=(rows&&rows.length)?rows:PROV_DEFAULT;
+    data.forEach(d=>tb.appendChild(Prov._buildTr(d)));
+    Prov._renum();
+    tb.querySelectorAll(".prov-correo").forEach(inp=>{ if(inp.value) Prov.validarCorreo(inp); });
+  },
+  async save(){
+    const rows=Prov._ser(), pay={rows,ts:Date.now()};
+    lsSet(LS_PROV,pay);
+    try{ await fbSet(FB_PROV,pay); lastProvTs=pay.ts; setSyncStatus("En vivo","sync-ok"); }
+    catch(e){ setSyncStatus("Sin conexión","sync-error"); }
+    mkSaved("prov-st");
+    Ped.refreshProveedorSelects();
+  }
+};
+
+/* ══════════════════════ CARGA / POLLING ══════════════════════ */
+let lastPedTs=0, lastProvTs=0;
+let saveTimerPed=null, saveTimerProv=null;
+
+function scheduleSavePed(){ clearTimeout(saveTimerPed); saveTimerPed=setTimeout(()=>Ped.save(),1200); }
+function scheduleSaveProv(){ clearTimeout(saveTimerProv); saveTimerProv=setTimeout(()=>Prov.save(),1200); }
+
+document.getElementById("ped-tbody")?.addEventListener("input", scheduleSavePed);
+document.addEventListener("change", e=>{
+  if(e.target.closest("#ped-tbody")) scheduleSavePed();
+  if(e.target.closest("#prov-tbody")) scheduleSaveProv();
+});
+
+async function loadAll(){
+  setSyncStatus("Cargando…");
+  try{
+    const [rPed, rProv] = await Promise.all([fbGet(FB_PED), fbGet(FB_PROV)]);
+    const lPed  = lsGet(LS_PED)  || {ts:0, rows:[]};
+    const lProv = lsGet(LS_PROV) || {ts:0, rows:[]};
+
+    // Proveedores (primero, para que los selects de proveedor de Pedidos ya tengan las opciones)
+    let provFinal;
+    const remoteProvTs = (rProv && rProv.ts) || 0;
+    if(remoteProvTs >= (lProv.ts||0) && rProv && rProv.rows && rProv.rows.length){
+      provFinal = rProv.rows; lastProvTs = remoteProvTs; lsSet(LS_PROV, rProv);
+    } else if(lProv.rows && lProv.rows.length){
+      provFinal = lProv.rows; lastProvTs = lProv.ts||Date.now();
+      fbSet(FB_PROV, {rows:provFinal, ts:lastProvTs}).catch(()=>{});
+    } else {
+      provFinal = PROV_DEFAULT;
+      lastProvTs = Date.now();
+      fbSet(FB_PROV, {rows:provFinal, ts:lastProvTs}).catch(()=>{});
+      lsSet(LS_PROV, {rows:provFinal, ts:lastProvTs});
+    }
+    Prov.restore(provFinal);
+
+    // Pedidos
+    let pedFinal;
+    const remotePedTs = (rPed && rPed.ts) || 0;
+    if(remotePedTs >= (lPed.ts||0) && rPed && rPed.rows && rPed.rows.length){
+      pedFinal = rPed.rows; lastPedTs = remotePedTs; lsSet(LS_PED, rPed);
+    } else if(lPed.rows && lPed.rows.length){
+      pedFinal = lPed.rows; lastPedTs = lPed.ts||Date.now();
+      fbSet(FB_PED, {rows:pedFinal, ts:lastPedTs}).catch(()=>{});
+    } else {
+      pedFinal = [];
+      lastPedTs = Date.now();
+    }
+    Ped.restore(pedFinal);
+    Ped.refreshProveedorSelects();
+
+    setSyncStatus("En vivo","sync-ok");
+  } catch(e){
+    const lPed  = lsGet(LS_PED)  || {ts:0, rows:[]};
+    const lProv = lsGet(LS_PROV) || {ts:0, rows:[]};
+    Prov.restore((lProv.rows&&lProv.rows.length)?lProv.rows:PROV_DEFAULT);
+    Ped.restore(lPed.rows||[]);
+    Ped.refreshProveedorSelects();
+    setSyncStatus("Sin conexión","sync-error");
+  }
+}
+
+setInterval(async ()=>{
+  try{
+    const remoteProv = await fbGet(FB_PROV);
+    if(remoteProv && (remoteProv.ts||0) > lastProvTs){
+      lastProvTs = remoteProv.ts;
+      lsSet(LS_PROV, remoteProv);
+      Prov.restore(remoteProv.rows||[]);
+    }
+    const remotePed = await fbGet(FB_PED);
+    if(remotePed && (remotePed.ts||0) > lastPedTs){
+      lastPedTs = remotePed.ts;
+      lsSet(LS_PED, remotePed);
+      Ped.restore(remotePed.rows||[]);
+    }
+    Ped.refreshProveedorSelects();
+    setSyncStatus("En vivo","sync-ok");
+  } catch(e){
+    setSyncStatus("Sin conexión","sync-error");
+  }
+}, 10000);
+
+/* ══════════════════════ NAV SCROLLSPY ══════════════════════ */
+function goSection(el, id){
+  document.querySelectorAll("nav a").forEach(a=>a.classList.remove("active"));
+  el.classList.add("active");
+  document.querySelectorAll(".section-page").forEach(s=>s.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+  window.scrollTo({top:0,behavior:"instant"});
+  return false;
+}
+
+/* ══════════════════════ INIT ══════════════════════ */
+window.addEventListener("DOMContentLoaded", ()=>{
+  loadAll();
+});
+</script>
+</body>
+</html>
