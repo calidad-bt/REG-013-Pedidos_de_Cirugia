@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Pedidos CX — SGC BT</title>
+<title>REG-013</title>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -17,7 +17,7 @@
   --font:'IBM Plex Sans',sans-serif; --mono:'IBM Plex Mono',monospace;
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:var(--font);font-size:12px;color:var(--text);background:var(--bg);min-height:100vh;line-height:1.35;}
+body{font-family:var(--font);font-size:14px;color:var(--text);background:var(--bg);min-height:100vh;line-height:1.4;}
 
 /* NAV */
 nav{position:fixed;top:0;left:0;right:0;height:var(--nav-h);background:var(--accent-d);display:flex;align-items:center;padding:0 16px;gap:6px;z-index:200;border-bottom:2px solid var(--accent);}
@@ -33,7 +33,7 @@ nav a.active{background:rgba(255,255,255,.18);color:white;font-weight:700;}
 #syncStatus.sync-error{color:#F87171;}
 
 /* LAYOUT */
-.layout{padding:calc(var(--nav-h) + 20px) 20px 40px;max-width:1440px;margin:0 auto;display:flex;flex-direction:column;gap:0;}
+.layout{padding:calc(var(--nav-h) + 20px) 20px 40px;max-width:1680px;margin:0 auto;display:flex;flex-direction:column;gap:0;}
 .section-page{display:none;flex-direction:column;gap:0;}
 .section-page.active{display:flex;}
 
@@ -66,9 +66,21 @@ nav a.active{background:rgba(255,255,255,.18);color:white;font-weight:700;}
 
 /* KPI STRIP */
 .kpi-row{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-bottom:14px;}
-.kpi-card{border:1px solid var(--border);border-radius:var(--radius);padding:8px 10px;background:var(--bg);}
-.kpi-num{font-family:var(--mono);font-size:18px;font-weight:700;color:var(--accent-d);}
-.kpi-lbl{font-size:9.5px;color:var(--text-2);text-transform:uppercase;letter-spacing:.04em;margin-top:2px;}
+.kpi-card{border:1px solid var(--border);border-left:4px solid var(--border-d);border-radius:var(--radius);padding:9px 12px;background:var(--surface);}
+.kpi-lbl{font-size:9.5px;color:var(--text-2);text-transform:uppercase;letter-spacing:.04em;font-weight:600;margin-bottom:4px;}
+.kpi-num{font-family:var(--mono);font-size:20px;font-weight:700;color:var(--text);}
+.kpi-total{border-left-color:var(--accent);}
+.kpi-total .kpi-num{color:var(--accent-d);}
+.kpi-reclamo{border-left-color:var(--err-bd);}
+.kpi-reclamo .kpi-num{color:var(--err-text);}
+.kpi-pendpago{border-left-color:var(--ok-bd);}
+.kpi-pendpago .kpi-num{color:var(--ok-text);}
+.kpi-proceso{border-left-color:#AED6F1;}
+.kpi-proceso .kpi-num{color:#1565C0;}
+.kpi-cotiz{border-left-color:var(--warn-bd);}
+.kpi-cotiz .kpi-num{color:var(--warn-text);}
+.kpi-pagado{border-left-color:#D2B4DE;}
+.kpi-pagado .kpi-num{color:#6C3483;}
 
 /* BUTTONS */
 .btn{height:30px;padding:0 12px;font-size:12px;font-weight:600;border-radius:var(--radius);border:1px solid;display:inline-flex;align-items:center;gap:5px;cursor:pointer;transition:filter .1s;background:var(--surface);}
@@ -89,9 +101,9 @@ nav a.active{background:rgba(255,255,255,.18);color:white;font-weight:700;}
 /* TABLE */
 .tbl-wrap{overflow-x:auto;}
 table.tbl{border-collapse:collapse;width:100%;table-layout:fixed;}
-.tbl th{background:var(--bg);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-2);padding:5px 6px;border-top:1px solid var(--border);border-bottom:1px solid var(--border-d);border-right:1px solid var(--border);white-space:normal;word-break:break-word;}
+.tbl th{background:var(--bg);font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-2);padding:7px 6px;border-top:1px solid var(--border);border-bottom:1px solid var(--border-d);border-right:1px solid var(--border);white-space:normal;word-break:break-word;}
 .tbl th:last-child{border-right:none;}
-.tbl td{padding:3px 6px;border-bottom:1px solid var(--border);border-right:1px solid var(--border);font-size:11px;vertical-align:middle;}
+.tbl td{padding:5px 6px;border-bottom:1px solid var(--border);border-right:1px solid var(--border);font-size:13px;vertical-align:middle;}
 .tbl td:last-child{border-right:none;}
 .tbl tr:last-child td{border-bottom:none;}
 .tbl tr:hover td{background:#F4F8FA;}
@@ -99,10 +111,10 @@ table.tbl{border-collapse:collapse;width:100%;table-layout:fixed;}
 .tbl tr.row-anulado input,.tbl tr.row-anulado select,.tbl tr.row-anulado textarea{color:var(--text-3);text-decoration:line-through;}
 .row-num{font-family:var(--mono);font-size:11px;color:var(--text-3);text-align:center;display:block;}
 
-.ti,.ts,.ta{width:100%;border:1px solid transparent;background:transparent;border-radius:3px;padding:3px 5px;font-family:var(--font);font-size:11px;color:var(--text);}
+.ti,.ts,.ta{width:100%;display:block;border:1px solid transparent;background:transparent;border-radius:3px;padding:4px 5px;font-family:var(--font);font-size:13px;color:var(--text);vertical-align:middle;line-height:1.35;box-sizing:border-box;}
 .ti:hover,.ts:hover,.ta:hover{border-color:var(--border);background:white;}
 .ti:focus,.ts:focus,.ta:focus{outline:none;border-color:var(--accent);background:white;box-shadow:0 0 0 2px rgba(14,107,138,.08);}
-.ta{resize:none;overflow:hidden;min-height:28px;}
+.ta{resize:none;overflow:hidden;min-height:32px;}
 .ts{appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='9' height='6'%3E%3Cpath d='M0 0l4.5 6L9 0z' fill='%235A6470'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 6px center;padding-right:22px;}
 .date-wrap{position:relative;display:flex;}
 .date-picker-hidden{position:absolute;right:0;top:0;width:20px;height:100%;opacity:0;pointer-events:none;}
@@ -118,7 +130,7 @@ table.tbl{border-collapse:collapse;width:100%;table-layout:fixed;}
 .pe-noiniciado{background-color:#F0F1F3!important;color:var(--text-2)!important;border-color:var(--border)!important;}
 select option{background-color:#fff!important;background-image:none!important;color:var(--text)!important;font-weight:400!important;}
 .sel-wrap{position:relative;display:block;}
-.sel-wrap select.sel-estado{background-image:none!important;padding-right:18px;padding-left:4px;font-size:10px!important;}
+.sel-wrap select.sel-estado{background-image:none!important;padding-right:18px;padding-left:4px;font-size:11.5px!important;}
 .sel-arrow{position:absolute;right:5px;top:50%;transform:translateY(-50%);width:0;height:0;border-left:4px solid transparent;border-right:4px solid transparent;border-top:5px solid var(--text-2);pointer-events:none;}
 .pe-reclamo + .sel-arrow{border-top-color:var(--err-text);}
 .pe-pagado + .sel-arrow{border-top-color:#6C3483;}
@@ -128,10 +140,12 @@ select option{background-color:#fff!important;background-image:none!important;co
 .pe-noiniciado + .sel-arrow{border-top-color:var(--text-2);}
 
 /* ── ESTADO COTIZACIÓN ───────────────────────────────────── */
+.co-sinestado{background-color:#F0F1F3!important;color:var(--text-2)!important;border-color:var(--border)!important;}
 .co-notiene{background-color:#EF75AC!important;color:#1C2226!important;border-color:#D65D95!important;}
 .co-nocotiza{background-color:#F75757!important;color:#1C2226!important;border-color:#D63B3B!important;}
 .co-enproceso{background-color:#0070C0!important;color:#FFFFFF!important;border-color:#00568F!important;}
 .co-aprobado{background-color:#92D050!important;color:#1C2226!important;border-color:#749E3E!important;}
+.co-sinestado + .sel-arrow{border-top-color:var(--text-2);}
 .co-notiene + .sel-arrow{border-top-color:#1C2226;}
 .co-nocotiza + .sel-arrow{border-top-color:#1C2226;}
 .co-enproceso + .sel-arrow{border-top-color:#FFFFFF;}
@@ -155,6 +169,23 @@ select option{background-color:#fff!important;background-image:none!important;co
 .coti-prov-field{flex:1 1 150px;min-width:0;}
 .coti-prov-otro{margin-top:4px;}
 .coti-empty{padding:10px 8px;color:var(--text-3);font-size:11.5px;font-style:italic;}
+
+/* ── BUSCADOR ─────────────────────────────────────────────── */
+.search-row{margin-bottom:12px;}
+.search-input{width:100%;height:32px;padding:0 12px;border:1px solid var(--border);border-radius:var(--radius);font-family:var(--font);font-size:12px;color:var(--text);background:var(--surface);}
+.search-input:hover{border-color:var(--border-d);}
+.search-input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 2px rgba(14,107,138,.08);}
+.search-input::placeholder{color:var(--text-3);}
+
+/* ── COTIZACIÓN: barra de dólar y par usd/ars ────────────────── */
+.coti-rate-bar{display:flex;align-items:center;gap:6px;margin-bottom:12px;padding:8px 10px;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);flex-wrap:wrap;}
+.coti-rate-lbl{font-size:11px;font-weight:600;color:var(--text-2);}
+.coti-rate-sign{font-family:var(--mono);font-size:12px;color:var(--text-2);}
+#coti-rate{height:26px;font-family:var(--mono);}
+.coti-rate-note{font-size:10.5px;color:var(--text-3);}
+.coti-money-pair{display:flex;gap:5px;}
+.coti-money-sub{flex:1;display:flex;align-items:center;gap:4px;min-width:0;}
+.coti-money-tag{font-family:var(--mono);font-size:9px;font-weight:700;color:var(--text-3);flex:0 0 auto;}
 
 .badge{display:inline-block;border-radius:10px;font-size:11px;font-weight:700;padding:2px 8px;}
 .badge-anulado{background:var(--err-bg);color:var(--err-text);border:1px solid var(--err-bd);}
@@ -223,6 +254,7 @@ select option{background-color:#fff!important;background-image:none!important;co
   .coti-del-wrap{flex:1 1 100%;justify-content:flex-start;padding:6px 8px;}
   .coti-prov-row{flex-direction:column;}
   .coti-prov-field{flex:1 1 100%;width:100%;}
+  .coti-money-pair{flex-direction:column;}
 }
 
 @media print {
@@ -272,13 +304,17 @@ select option{background-color:#fff!important;background-image:none!important;co
       <div class="card-body">
         <div class="sec-title">Pedidos CX<span class="sync-inline" id="ped-st">—</span></div>
 
+        <div class="search-row no-print">
+          <input type="text" class="search-input" id="ped-search" placeholder="Buscar por paciente, médico, producto, proveedor, solicitante, lugar..." oninput="Ped.filtrar(this.value)">
+        </div>
+
         <div class="kpi-row">
-          <div class="kpi-card"><div class="kpi-num" id="k-total">0</div><div class="kpi-lbl">Total</div></div>
-          <div class="kpi-card"><div class="kpi-num" id="k-reclamo">0</div><div class="kpi-lbl">Reclamo</div></div>
-          <div class="kpi-card"><div class="kpi-num" id="k-pendpago">0</div><div class="kpi-lbl">Pend. de pago</div></div>
-          <div class="kpi-card"><div class="kpi-num" id="k-proceso">0</div><div class="kpi-lbl">En proceso</div></div>
-          <div class="kpi-card"><div class="kpi-num" id="k-cotiz">0</div><div class="kpi-lbl">Bajo cotización</div></div>
-          <div class="kpi-card"><div class="kpi-num" id="k-pagado">0</div><div class="kpi-lbl">Pagado</div></div>
+          <div class="kpi-card kpi-total"><div class="kpi-lbl">Total</div><div class="kpi-num" id="k-total">0</div></div>
+          <div class="kpi-card kpi-reclamo"><div class="kpi-lbl">Reclamo</div><div class="kpi-num" id="k-reclamo">0</div></div>
+          <div class="kpi-card kpi-pendpago"><div class="kpi-lbl">Pend. de pago</div><div class="kpi-num" id="k-pendpago">0</div></div>
+          <div class="kpi-card kpi-proceso"><div class="kpi-lbl">En proceso</div><div class="kpi-num" id="k-proceso">0</div></div>
+          <div class="kpi-card kpi-cotiz"><div class="kpi-lbl">Bajo cotización</div><div class="kpi-num" id="k-cotiz">0</div></div>
+          <div class="kpi-card kpi-pagado"><div class="kpi-lbl">Pagado</div><div class="kpi-num" id="k-pagado">0</div></div>
         </div>
 
         <div class="tbl-wrap">
@@ -344,6 +380,19 @@ select option{background-color:#fff!important;background-image:none!important;co
 
       <div class="card-body">
         <div class="sec-title">Cotizaciones<span class="sync-inline" id="coti-st">—</span></div>
+
+        <div class="search-row no-print">
+          <input type="text" class="search-input" id="coti-search" placeholder="Buscar por paciente, producto o proveedor..." oninput="Coti.filtrar(this.value)">
+        </div>
+
+        <div class="coti-rate-bar no-print">
+          <span class="coti-rate-lbl">Dólar oficial (venta):</span>
+          <span class="coti-rate-sign">$</span>
+          <input type="number" step="0.01" min="0" id="coti-rate" class="ti" style="width:100px" oninput="Coti.onRateEdit(this)">
+          <button class="btn btn-light btn-sm" onclick="refreshDolarRate(true)">Actualizar</button>
+          <span class="coti-rate-note" id="coti-rate-note"></span>
+        </div>
+
         <div class="coti-list" id="coti-list"></div>
         <button class="add-row-btn no-print" onclick="Coti.addCard()">+ Agregar cotización</button>
       </div>
@@ -644,6 +693,15 @@ const Ped = {
     document.getElementById("k-cotiz").textContent=counts.cotiz;
     document.getElementById("k-pagado").textContent=counts.pagado;
   },
+  filtrar(term){
+    term=(term||"").trim().toLowerCase();
+    document.querySelectorAll("#ped-tbody tr").forEach(tr=>{
+      if(!term){ tr.style.display=""; return; }
+      const campos=[".sol-sel",".ped-fpedido",".ped-paciente",".ped-medico",".ped-lugar",".ped-fcx",".ped-producto",".prov-sel",".ped-fretiro",".ped-oc"];
+      const texto = campos.map(cls=>tr.querySelector(cls)?.value||"").join(" ").toLowerCase();
+      tr.style.display = texto.includes(term) ? "" : "none";
+    });
+  },
   _buildTr(d){
     d=d||{};
     const fpedido=normFecha(d.fpedido), fcx=normFecha(d.fcx), fretiro=normFecha(d.fretiro);
@@ -741,7 +799,6 @@ const Ped = {
     const tr = Ped._buildTr({fpedido:hoyDisplay(),estado:"noiniciado"});
     tb.appendChild(tr);
     Ped.sortRows(); mkDirty("ped-st");
-    Coti.addLinkedCard(tr.dataset.pedId);
   },
   _ser(){
     return [...document.querySelectorAll("#ped-tbody tr")].map(tr=>{
@@ -770,13 +827,16 @@ const Ped = {
   },
   restore(rows){
     const tb=document.getElementById("ped-tbody"); tb.innerHTML="";
+    let faltabaId=false;
     (rows||[]).forEach(d=>{
+      if(!d.pedId) faltabaId=true;
       const tr=Ped._buildTr(d);
       if(d.anulado && d.anulado.si){ tr.dataset.anuladoQuien=d.anulado.quien||""; tr.dataset.anuladoMotivo=d.anulado.motivo||""; }
       tb.appendChild(tr);
     });
     Ped.sortRows();
     setTimeout(()=>{ tb.querySelectorAll(".cta").forEach(autoGrow); }, 0);
+    if(faltabaId) scheduleSavePed();
   },
   refreshProveedorSelects(){
     const provs = [...document.querySelectorAll("#prov-tbody tr")].map(tr=>tr.querySelector(".prov-empresa")?.value||"").filter(Boolean);
@@ -898,6 +958,7 @@ const Prov = {
 
 /* ══════════════════════ COTIZACIONES ══════════════════════ */
 const COTI_ESTADOS = [
+  ["sinestado",  "SIN ESTADO"],
   ["notiene",    "NO TIENE"],
   ["nocotiza",   "NO COTIZA"],
   ["enproceso",  "EN PROCESO"],
@@ -922,7 +983,7 @@ const Coti = {
     return `<select class="ts coti-prov-sel" onchange="Coti.onProveedorChange(this)"><option value="">— proveedor —</option>${opts}<option value="otros"${otroSel}>Otros</option></select>`;
   },
   estSelect(cur){
-    cur = cur || "notiene";
+    cur = cur || "sinestado";
     const opts = COTI_ESTADOS.map(([v,label])=>`<option value="${v}"${v===cur?" selected":""}>${label}</option>`).join("");
     return `<div class="sel-wrap"><select class="ts coti-estado co-${cur}" onchange="Coti.onEstadoChange(this)">${opts}</select><span class="sel-arrow"></span></div>`;
   },
@@ -936,6 +997,33 @@ const Coti = {
     if(otro) otro.style.display = sel.value==="otros" ? "block" : "none";
     mkDirty("coti-st");
   },
+  getDolarRate(){
+    const v = parseFloat((document.getElementById("coti-rate")?.value||"").replace(",", "."));
+    return (v && v>0) ? v : null;
+  },
+  onUsdInput(el){
+    mkDirty("coti-st");
+    const row = el.closest(".coti-prov-row");
+    const arsEl = row.querySelector(".coti-prov-ars");
+    const rate = Coti.getDolarRate();
+    const usd = parseFloat(el.value)||0;
+    if(!usd){ arsEl.value=""; return; }
+    if(rate) arsEl.value = "$ " + Math.round(usd*rate).toLocaleString("es-AR");
+  },
+  onArsInput(el){
+    maskMoney(el);
+    mkDirty("coti-st");
+    const row = el.closest(".coti-prov-row");
+    const usdEl = row.querySelector(".coti-prov-usd");
+    const rate = Coti.getDolarRate();
+    const ars = parseFloat(moneyDigits(el.value))||0;
+    if(!ars){ usdEl.value=""; return; }
+    if(rate) usdEl.value = (ars/rate).toFixed(2);
+  },
+  onRateEdit(inp){
+    inp.dataset.userEdited = "1";
+    document.getElementById("coti-rate-note").textContent = "Cotización ingresada a mano";
+  },
   buildProvRow(idx, p){
     p=p||{};
     return `
@@ -948,11 +1036,14 @@ const Coti = {
         </div>
         <div class="coti-prov-field">
           <span class="coti-lbl">Valor Unid. + IVA</span>
-          <input type="text" class="ti money-in coti-prov-valor" inputmode="numeric" value="${p.valor?('$ '+Number(p.valor).toLocaleString('es-AR')):''}" oninput="mkDirty('coti-st');maskMoney(this)">
+          <div class="coti-money-pair">
+            <div class="coti-money-sub"><span class="coti-money-tag">USD</span><input type="number" step="0.01" min="0" class="ti coti-prov-usd" value="${p.valorUsd||''}" oninput="Coti.onUsdInput(this)"></div>
+            <div class="coti-money-sub"><span class="coti-money-tag">ARS</span><input type="text" class="ti money-in coti-prov-ars" inputmode="numeric" value="${p.valorArs?('$ '+Number(p.valorArs).toLocaleString('es-AR')):''}" oninput="Coti.onArsInput(this)"></div>
+          </div>
         </div>
         <div class="coti-prov-field">
           <span class="coti-lbl">Estado</span>
-          ${Coti.estSelect(p.estado||"notiene")}
+          ${Coti.estSelect(p.estado||"sinestado")}
         </div>
       </div>`;
   },
@@ -960,8 +1051,9 @@ const Coti = {
     return [...wrap.querySelectorAll(".coti-prov-row")].map(row=>({
       proveedor: row.querySelector(".coti-prov-sel")?.value||"",
       proveedorOtro: row.querySelector(".coti-prov-otro")?.value||"",
-      valor: moneyDigits(row.querySelector(".coti-prov-valor")?.value||""),
-      estado: row.querySelector(".coti-estado")?.value||"notiene"
+      valorUsd: row.querySelector(".coti-prov-usd")?.value||"",
+      valorArs: moneyDigits(row.querySelector(".coti-prov-ars")?.value||""),
+      estado: row.querySelector(".coti-estado")?.value||"sinestado"
     }));
   },
   regenProvRows(card, n){
@@ -1013,43 +1105,21 @@ const Coti = {
     list.appendChild(Coti._buildCard({}));
     mkDirty("coti-st");
   },
-  addLinkedCard(pedId){
-    const list=document.getElementById("coti-list");
-    list.appendChild(Coti._buildCard({pedId:pedId||""}));
-    mkDirty("coti-st");
-    scheduleSaveCoti();
-  },
-  reconcileWithPedidos(){
-    const list=document.getElementById("coti-list");
-    const existingIds = new Set([...list.querySelectorAll(".coti-card")].map(c=>c.dataset.pedId).filter(Boolean));
-    let added=false;
-    document.querySelectorAll("#ped-tbody tr").forEach(tr=>{
-      const pedId = tr.dataset.pedId;
-      if(!pedId || existingIds.has(pedId)) return;
-      const paciente = tr.querySelector(".ped-paciente")?.value.trim() || "";
-      const producto = tr.querySelector(".ped-producto")?.value.trim() || "";
-      list.appendChild(Coti._buildCard({pedId, paciente, producto}));
-      existingIds.add(pedId);
-      added=true;
-    });
-    if(added){ mkDirty("coti-st"); scheduleSaveCoti(); }
-  },
-  syncPacienteProducto(pedId, field, value){
-    if(!pedId) return;
-    const card = document.querySelector(`.coti-card[data-ped-id="${pedId}"]`);
-    if(!card) return;
-    const sel = field==="paciente" ? card.querySelector(".coti-paciente") : card.querySelector(".coti-producto");
-    if(!sel) return;
-    if(value && ![...sel.options].some(o=>o.value===value)){
-      sel.insertAdjacentHTML("beforeend", `<option value="${esc(value)}">${esc(value)}</option>`);
-    }
-    sel.value = value || "";
-  },
   eliminarCard(btn){
     if(!confirm("¿Eliminar esta cotización?")) return;
     btn.closest(".coti-card").remove();
     mkDirty("coti-st");
     scheduleSaveCoti();
+  },
+  filtrar(term){
+    term=(term||"").trim().toLowerCase();
+    document.querySelectorAll("#coti-list .coti-card").forEach(card=>{
+      if(!term){ card.style.display=""; return; }
+      let texto = (card.querySelector(".coti-paciente")?.value||"") + " " + (card.querySelector(".coti-producto")?.value||"");
+      card.querySelectorAll(".coti-prov-sel").forEach(s=>texto+=" "+s.value);
+      card.querySelectorAll(".coti-prov-otro").forEach(o=>texto+=" "+o.value);
+      card.style.display = texto.toLowerCase().includes(term) ? "" : "none";
+    });
   },
   refreshPacienteProductoSelects(){
     const pacientes = [...new Set([...document.querySelectorAll("#ped-tbody .ped-paciente")].map(t=>t.value.trim()).filter(Boolean))];
@@ -1109,13 +1179,8 @@ function scheduleSaveCoti(){ clearTimeout(saveTimerCoti); saveTimerCoti=setTimeo
 document.getElementById("ped-tbody")?.addEventListener("input", scheduleSavePed);
 document.getElementById("coti-list")?.addEventListener("input", scheduleSaveCoti);
 document.addEventListener("input", e=>{
-  if(e.target.classList.contains("ped-paciente")){
+  if(e.target.classList.contains("ped-paciente") || e.target.classList.contains("ped-producto")){
     Coti.refreshPacienteProductoSelects();
-    Coti.syncPacienteProducto(e.target.closest("tr")?.dataset.pedId, "paciente", e.target.value.trim());
-  }
-  if(e.target.classList.contains("ped-producto")){
-    Coti.refreshPacienteProductoSelects();
-    Coti.syncPacienteProducto(e.target.closest("tr")?.dataset.pedId, "producto", e.target.value.trim());
   }
   if(e.target.classList.contains("prov-empresa")){
     Coti.refreshProveedorSelects();
@@ -1179,7 +1244,6 @@ async function loadAll(){
       lastCotiTs = Date.now();
     }
     Coti.restore(cotiFinal);
-    Coti.reconcileWithPedidos();
 
     setSyncStatus("En vivo","sync-ok");
   } catch(e){
@@ -1190,7 +1254,6 @@ async function loadAll(){
     Ped.restore(lPed.rows||[]);
     Ped.refreshProveedorSelects();
     Coti.restore(lCoti.rows||[]);
-    Coti.reconcileWithPedidos();
     setSyncStatus("Sin conexión","sync-error");
   }
 }
@@ -1218,7 +1281,6 @@ setInterval(async ()=>{
       lsSet(LS_COTI, remoteCoti);
       Coti.restore(remoteCoti.rows||[]);
     }
-    Coti.reconcileWithPedidos();
     setSyncStatus("En vivo","sync-ok");
   } catch(e){
     setSyncStatus("Sin conexión","sync-error");
@@ -1235,9 +1297,30 @@ function goSection(el, id){
   return false;
 }
 
+/* ══════════════════════ COTIZACIÓN DEL DÓLAR ══════════════════════ */
+async function refreshDolarRate(manual){
+  const input = document.getElementById("coti-rate");
+  const note = document.getElementById("coti-rate-note");
+  if(manual && input) input.dataset.userEdited = "";
+  if(input && input.dataset.userEdited) return;
+  try{
+    const r = await fetch("https://dolarapi.com/v1/dolares/oficial");
+    if(!r.ok) throw new Error(r.status);
+    const j = await r.json();
+    if(j && j.venta){
+      if(input) input.value = j.venta;
+      if(note) note.textContent = "Actualizado " + new Date().toLocaleTimeString();
+    }
+  } catch(e){
+    if(note) note.textContent = "No se pudo obtener automáticamente — ingresá el valor a mano";
+  }
+}
+setInterval(()=>refreshDolarRate(false), 30*60000);
+
 /* ══════════════════════ INIT ══════════════════════ */
 window.addEventListener("DOMContentLoaded", ()=>{
   loadAll();
+  refreshDolarRate(false);
 });
 </script>
 </body>
