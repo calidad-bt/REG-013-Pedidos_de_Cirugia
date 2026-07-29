@@ -66,22 +66,28 @@ nav a.active{background:rgba(255,255,255,.18);color:white;font-weight:700;}
 .sync-inline.ok{color:var(--ok-text);}
 
 /* KPI STRIP */
-.kpi-row{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-bottom:14px;}
+.kpi-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px;margin-bottom:14px;}
 .kpi-card{border:1px solid var(--border);border-left:4px solid var(--border-d);border-radius:var(--radius);padding:9px 12px;background:var(--surface);}
 .kpi-lbl{font-size:9.5px;color:var(--text-2);text-transform:uppercase;letter-spacing:.04em;font-weight:600;margin-bottom:4px;}
 .kpi-num{font-family:var(--mono);font-size:20px;font-weight:700;color:var(--text);}
 .kpi-total{border-left-color:var(--accent);}
 .kpi-total .kpi-num{color:var(--accent-d);}
-.kpi-reclamo{border-left-color:var(--err-bd);}
-.kpi-reclamo .kpi-num{color:var(--err-text);}
-.kpi-pendpago{border-left-color:var(--ok-bd);}
-.kpi-pendpago .kpi-num{color:var(--ok-text);}
-.kpi-proceso{border-left-color:#AED6F1;}
-.kpi-proceso .kpi-num{color:#1565C0;}
+.kpi-noiniciado{border-left-color:var(--border-d);}
+.kpi-noiniciado .kpi-num{color:var(--text-2);}
 .kpi-cotiz{border-left-color:var(--warn-bd);}
 .kpi-cotiz .kpi-num{color:var(--warn-text);}
+.kpi-proceso{border-left-color:#AED6F1;}
+.kpi-proceso .kpi-num{color:#1565C0;}
+.kpi-pausado{border-left-color:#FF00FF;}
+.kpi-pausado .kpi-num{color:#CC00CC;}
+.kpi-pendpago{border-left-color:var(--ok-bd);}
+.kpi-pendpago .kpi-num{color:var(--ok-text);}
 .kpi-pagado{border-left-color:#D2B4DE;}
 .kpi-pagado .kpi-num{color:#6C3483;}
+.kpi-anulados{border-left-color:var(--text-3);}
+.kpi-anulados .kpi-num{color:var(--text-3);}
+.kpi-reclamo{border-left-color:var(--err-bd);}
+.kpi-reclamo .kpi-num{color:var(--err-text);}
 
 /* BUTTONS */
 .btn{height:30px;padding:0 12px;font-size:12px;font-weight:600;border-radius:var(--radius);border:1px solid;display:inline-flex;align-items:center;gap:5px;cursor:pointer;transition:filter .1s;background:var(--surface);}
@@ -94,7 +100,7 @@ nav a.active{background:rgba(255,255,255,.18);color:white;font-weight:700;}
 .btn-sm{height:22px;padding:0 6px;font-size:10px;}
 .btn-icon{width:24px;height:22px;padding:0;justify-content:center;}
 .toolbar{display:flex;gap:8px;margin-bottom:12px;justify-content:flex-end;}
-.add-row-btn{width:100%;height:34px;border:1.5px dashed var(--accent-l);border-radius:var(--radius);color:var(--accent);font-size:12px;font-weight:600;background:transparent;cursor:pointer;margin-top:8px;}
+.add-row-btn{width:100%;height:34px;border:1.5px dashed var(--accent-l);border-radius:var(--radius);color:var(--accent);font-size:12px;font-weight:600;background:transparent;cursor:pointer;margin:8px 0;}
 .add-row-btn:hover{background:var(--accent-l);}
 .del-btn{width:22px;height:22px;border:1px solid var(--err-bd);background:var(--err-bg);color:var(--err-text);font-size:14px;font-weight:700;border-radius:3px;cursor:pointer;line-height:1;}
 .del-btn:hover{filter:brightness(.95);}
@@ -123,22 +129,24 @@ table.tbl{border-collapse:collapse;width:100%;table-layout:fixed;}
 .oc-in{text-align:center;font-family:var(--mono);}
 
 /* ESTADO PEDIDO */
-.pe-reclamo{background-color:var(--err-bg)!important;color:var(--err-text)!important;border-color:var(--err-bd)!important;}
-.pe-pagado{background-color:#F4ECF7!important;color:#6C3483!important;border-color:#D2B4DE!important;}
-.pe-pendpago{background-color:var(--ok-bg)!important;color:var(--ok-text)!important;border-color:var(--ok-bd)!important;}
-.pe-proceso{background-color:#E3F2FD!important;color:#1565C0!important;border-color:#AED6F1!important;}
-.pe-cotiz{background-color:var(--warn-bg)!important;color:var(--warn-text)!important;border-color:var(--warn-bd)!important;}
 .pe-noiniciado{background-color:#F0F1F3!important;color:var(--text-2)!important;border-color:var(--border)!important;}
+.pe-cotiz{background-color:var(--warn-bg)!important;color:var(--warn-text)!important;border-color:var(--warn-bd)!important;}
+.pe-proceso{background-color:#E3F2FD!important;color:#1565C0!important;border-color:#AED6F1!important;}
+.pe-pausado{background-color:#FF00FF!important;color:#FFFFFF!important;border-color:#CC00CC!important;}
+.pe-pendpago{background-color:var(--ok-bg)!important;color:var(--ok-text)!important;border-color:var(--ok-bd)!important;}
+.pe-pagado{background-color:#F4ECF7!important;color:#6C3483!important;border-color:#D2B4DE!important;}
+.pe-reclamo{background-color:var(--err-bg)!important;color:var(--err-text)!important;border-color:var(--err-bd)!important;}
 select option{background-color:#fff!important;background-image:none!important;color:var(--text)!important;font-weight:400!important;}
 .sel-wrap{position:relative;display:block;}
 .sel-wrap select.sel-estado{background-image:none!important;padding-right:18px;padding-left:4px;font-size:11.5px!important;}
 .sel-arrow{position:absolute;right:5px;top:50%;transform:translateY(-50%);width:0;height:0;border-left:4px solid transparent;border-right:4px solid transparent;border-top:5px solid var(--text-2);pointer-events:none;}
-.pe-reclamo + .sel-arrow{border-top-color:var(--err-text);}
-.pe-pagado + .sel-arrow{border-top-color:#6C3483;}
-.pe-pendpago + .sel-arrow{border-top-color:var(--ok-text);}
-.pe-proceso + .sel-arrow{border-top-color:#1565C0;}
-.pe-cotiz + .sel-arrow{border-top-color:var(--warn-text);}
 .pe-noiniciado + .sel-arrow{border-top-color:var(--text-2);}
+.pe-cotiz + .sel-arrow{border-top-color:var(--warn-text);}
+.pe-proceso + .sel-arrow{border-top-color:#1565C0;}
+.pe-pausado + .sel-arrow{border-top-color:#FFFFFF;}
+.pe-pendpago + .sel-arrow{border-top-color:var(--ok-text);}
+.pe-pagado + .sel-arrow{border-top-color:#6C3483;}
+.pe-reclamo + .sel-arrow{border-top-color:var(--err-text);}
 
 /* ── ESTADO COTIZACIÓN ───────────────────────────────────── */
 .co-sinestado{background-color:#F0F1F3!important;color:var(--text-2)!important;border-color:var(--border)!important;}
@@ -191,13 +199,20 @@ select option{background-color:#fff!important;background-image:none!important;co
 .badge{display:inline-block;border-radius:10px;font-size:11px;font-weight:700;padding:2px 8px;}
 .badge-anulado{background:var(--err-bg);color:var(--err-text);border:1px solid var(--err-bd);}
 .acc-cell{display:flex;flex-direction:column;gap:3px;align-items:flex-start;}
-.acc-btns{display:flex;flex-direction:column;gap:4px;}
-.acc-btns-row{display:flex;gap:4px;}
+.acc-btns{display:block;}
+.acc-btns-row{display:flex;gap:4px;margin-bottom:4px;}
+.acc-btns-row:last-child{margin-bottom:0;}
 .acc-info{font-size:10.5px;color:var(--err-text);line-height:1.3;}
 .foto-thumbs{display:flex;flex-wrap:wrap;gap:5px;margin-top:5px;}
 .foto-thumb-wrap{position:relative;width:34px;height:34px;flex:0 0 auto;}
 .foto-thumb{width:34px;height:34px;object-fit:cover;border-radius:3px;border:1px solid var(--border);cursor:pointer;display:block;}
 .foto-del{position:absolute;top:-6px;right:-6px;width:16px;height:16px;border-radius:50%;background:var(--err-bg);border:1px solid var(--err-bd);color:var(--err-text);font-size:10px;line-height:1;cursor:pointer;padding:0;}
+.hist-entry{border-bottom:1px solid var(--border);padding:8px 0;}
+.hist-entry:last-child{border-bottom:none;}
+.hist-meta{font-size:10px;color:var(--text-3);margin-bottom:4px;font-family:var(--mono);}
+.hist-campo{font-size:12px;margin-bottom:2px;color:var(--text);}
+.hist-old{color:var(--text-3);text-decoration:line-through;}
+.hist-new{color:var(--accent-d);font-weight:600;}
 .copy-flash{color:var(--ok-text)!important;}
 
 /* EMAIL VALIDATION */
@@ -219,6 +234,26 @@ select option{background-color:#fff!important;background-image:none!important;co
 .no-print{}
 
 /* ══════════════ RESPONSIVE / MOBILE ══════════════ */
+/* ══════════════ LOGIN / SESIÓN / USUARIOS ══════════════ */
+#login-overlay{position:fixed;inset:0;z-index:9999;background:var(--bg);display:flex;align-items:center;justify-content:center;}
+.login-box{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:32px 36px;width:340px;max-width:90vw;}
+.login-logo{font-family:var(--mono);font-size:28px;font-weight:700;color:var(--accent);text-align:center;margin-bottom:4px;}
+.login-sub{font-size:11px;color:var(--text-3);text-align:center;margin-bottom:24px;letter-spacing:.04em;}
+.login-field{display:flex;flex-direction:column;gap:4px;margin-bottom:14px;}
+.login-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text-3);}
+.login-input{font-family:var(--font);font-size:13px;border:1px solid var(--border);border-radius:var(--radius);padding:8px 10px;outline:none;background:var(--bg);transition:border-color .15s;width:100%;box-sizing:border-box;}
+.login-input:focus{border-color:var(--accent);background:white;}
+.login-btn{width:100%;height:38px;margin-top:6px;font-family:var(--font);font-size:13px;font-weight:700;background:var(--accent);color:white;border:none;border-radius:var(--radius);cursor:pointer;}
+.login-btn:hover{filter:brightness(.92);}
+.login-error{font-size:11px;color:var(--err-text);margin-top:8px;text-align:center;min-height:16px;}
+.login-skip{font-size:11px;color:var(--text-3);text-align:center;margin-top:14px;cursor:pointer;text-decoration:underline;}
+.login-skip:hover{color:var(--text-2);}
+#session-bar{position:fixed;top:calc(var(--nav-h) + 6px);right:20px;z-index:201;min-height:26px;display:flex;align-items:center;gap:10px;padding:4px 10px;pointer-events:none;background:var(--accent-d);border:1px solid rgba(255,255,255,.25);border-radius:4px;box-shadow:0 2px 8px rgba(0,0,0,.12);}
+.session-user{font-size:11px;font-family:var(--mono);color:rgba(255,255,255,.85);pointer-events:auto;}
+.session-out{font-size:11px;color:rgba(255,255,255,.75);cursor:pointer;text-decoration:underline;pointer-events:auto;}
+.session-out:hover{color:white;}
+[disabled]{cursor:not-allowed;}
+
 @media (max-width: 760px) {
   nav{padding:0 10px;gap:4px;flex-wrap:wrap;height:auto;min-height:var(--nav-h);}
   .nav-brand{padding-right:8px;font-size:10px;}
@@ -281,12 +316,18 @@ select option{background-color:#fff!important;background-image:none!important;co
   <a href="#sec-pedidos" class="active" onclick="return goSection(this,'sec-pedidos')">Pedidos CX</a>
   <a href="#sec-cotizaciones" onclick="return goSection(this,'sec-cotizaciones')">Cotizaciones</a>
   <a href="#sec-proveedores" onclick="return goSection(this,'sec-proveedores')">Proveedores CX</a>
+  <a href="#sec-usuarios" id="nav-tab-usuarios" onclick="return goSection(this,'sec-usuarios')" style="display:none">Usuarios</a>
   <div class="nav-end">
     <button class="btn btn-light btn-sm no-print" onclick="window.print()">Imprimir</button>
     <div class="live-dot" id="liveDot"></div>
     <span id="syncStatus">—</span>
   </div>
 </nav>
+
+<div id="session-bar" class="no-print" style="display:none">
+  <span class="session-user" id="session-user-label"></span>
+  <span class="session-out" onclick="doLogout()">Salir</span>
+</div>
 
 <div class="layout">
 
@@ -316,12 +357,17 @@ select option{background-color:#fff!important;background-image:none!important;co
 
         <div class="kpi-row">
           <div class="kpi-card kpi-total"><div class="kpi-lbl">Total</div><div class="kpi-num" id="k-total">0</div></div>
-          <div class="kpi-card kpi-reclamo"><div class="kpi-lbl">Reclamo</div><div class="kpi-num" id="k-reclamo">0</div></div>
-          <div class="kpi-card kpi-pendpago"><div class="kpi-lbl">Pend. de pago</div><div class="kpi-num" id="k-pendpago">0</div></div>
-          <div class="kpi-card kpi-proceso"><div class="kpi-lbl">En proceso</div><div class="kpi-num" id="k-proceso">0</div></div>
+          <div class="kpi-card kpi-noiniciado"><div class="kpi-lbl">No iniciado</div><div class="kpi-num" id="k-noiniciado">0</div></div>
           <div class="kpi-card kpi-cotiz"><div class="kpi-lbl">Bajo cotización</div><div class="kpi-num" id="k-cotiz">0</div></div>
+          <div class="kpi-card kpi-proceso"><div class="kpi-lbl">En proceso</div><div class="kpi-num" id="k-proceso">0</div></div>
+          <div class="kpi-card kpi-pausado"><div class="kpi-lbl">Pausado</div><div class="kpi-num" id="k-pausado">0</div></div>
+          <div class="kpi-card kpi-pendpago"><div class="kpi-lbl">Pend. de pago</div><div class="kpi-num" id="k-pendpago">0</div></div>
           <div class="kpi-card kpi-pagado"><div class="kpi-lbl">Pagado</div><div class="kpi-num" id="k-pagado">0</div></div>
+          <div class="kpi-card kpi-anulados"><div class="kpi-lbl">Anulados</div><div class="kpi-num" id="k-anulados">0</div></div>
+          <div class="kpi-card kpi-reclamo"><div class="kpi-lbl">Reclamo</div><div class="kpi-num" id="k-reclamo">0</div></div>
         </div>
+
+        <button class="add-row-btn no-print" id="btn-agregar-pedido" onclick="Ped.addRow()">+ Agregar pedido</button>
 
         <div class="tbl-wrap">
           <table class="tbl">
@@ -362,7 +408,6 @@ select option{background-color:#fff!important;background-image:none!important;co
             <tbody id="ped-tbody"></tbody>
           </table>
         </div>
-        <button class="add-row-btn no-print" onclick="Ped.addRow()">+ Agregar pedido</button>
       </div>
     </div>
   </div>
@@ -400,7 +445,7 @@ select option{background-color:#fff!important;background-image:none!important;co
         </div>
 
         <div class="coti-list" id="coti-list"></div>
-        <button class="add-row-btn no-print" onclick="Coti.addCard()">+ Agregar cotización</button>
+        <button class="add-row-btn no-print" id="btn-agregar-cotizacion" onclick="Coti.addCard()">+ Agregar cotización</button>
       </div>
     </div>
   </div>
@@ -447,7 +492,51 @@ select option{background-color:#fff!important;background-image:none!important;co
             <tbody id="prov-tbody"></tbody>
           </table>
         </div>
-        <button class="add-row-btn no-print" onclick="Prov.addRow()">+ Agregar proveedor</button>
+        <button class="add-row-btn no-print" id="btn-agregar-proveedor" onclick="Prov.addRow()">+ Agregar proveedor</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════ SECCIÓN 4: USUARIOS (solo administración) ═══════════ -->
+  <div class="section-page" id="sec-usuarios">
+    <div class="card">
+      <div class="doc-header">
+        <div class="logo-box"><span class="logo-text">BT</span></div>
+        <div class="doc-title-area">
+          <div class="doc-title">Usuarios</div>
+          <div class="doc-subtitle">Acceso restringido — solo administración</div>
+        </div>
+        <div class="doc-meta">
+          <div class="meta-cell"><span class="meta-label">Aprobación</span><span class="meta-value">—</span></div>
+          <div class="meta-cell"><span class="meta-label">Entrada en vigor</span><span class="meta-value">28/07/2026</span></div>
+          <div class="meta-cell"><span class="meta-label">Código</span><span class="meta-value">REG-013</span></div>
+          <div class="meta-cell"><span class="meta-label">Versión</span><span class="meta-value">01</span></div>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="sec-title">Usuarios del sistema<span class="sync-inline" id="users-st">—</span></div>
+        <div class="tbl-wrap">
+          <table class="tbl" style="table-layout:auto">
+            <thead>
+              <tr>
+                <th style="width:30px">#</th>
+                <th style="min-width:130px">Usuario</th>
+                <th style="min-width:130px">Contraseña</th>
+                <th>Permisos</th>
+                <th class="no-print" style="width:30px">—</th>
+              </tr>
+            </thead>
+            <tbody id="tbody-usuarios"></tbody>
+          </table>
+        </div>
+        <button class="add-row-btn no-print" id="btn-agregar-usuario" onclick="addUsuarioRow()">+ Agregar usuario</button>
+        <div style="margin-top:14px;padding:10px 12px;background:var(--bg);border-radius:var(--radius);border:1px solid var(--border);font-size:11px;color:var(--text-2)">
+          <strong>Permisos:</strong>
+          <span style="margin-left:8px"><strong>pedidos</strong> — puede editar Solicitante, Fecha de pedido, Paciente, Médico, Lugar de CX, Fecha CX, Producto y Acciones</span>
+          <span style="margin-left:8px"><strong>compras</strong> — hoja de Pedidos CX completa + Cotizaciones completa</span>
+          <span style="margin-left:8px"><strong>proveedores</strong> — hoja de Proveedores CX completa</span>
+          <span style="margin-left:8px"><strong>administracion</strong> — gestión de usuarios</span>
+        </div>
       </div>
     </div>
   </div>
@@ -479,6 +568,36 @@ select option{background-color:#fff!important;background-image:none!important;co
   <img id="fotoOverlayImg" style="max-width:92vw;max-height:92vh;border-radius:4px;">
 </div>
 
+<div class="overlay no-print" id="historialOverlay" onclick="if(event.target===this) this.classList.remove('open')">
+  <div class="modal" style="width:540px;max-width:94vw;">
+    <div class="modal-head">Historial de cambios</div>
+    <div class="modal-body" id="historialBody" style="max-height:60vh;overflow-y:auto;"></div>
+    <div class="modal-foot">
+      <button class="btn btn-light" onclick="document.getElementById('historialOverlay').classList.remove('open')">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<div id="login-overlay" style="display:none">
+  <div class="login-box">
+    <div class="login-logo">BT</div>
+    <div class="login-sub">REG-013 · Pedidos CX</div>
+    <div class="login-field">
+      <label class="login-label">Usuario</label>
+      <input class="login-input" id="login-user" type="text" placeholder="usuario" autocomplete="username"
+        onkeydown="if(event.key==='Enter') document.getElementById('login-pass').focus()">
+    </div>
+    <div class="login-field">
+      <label class="login-label">Contraseña</label>
+      <input class="login-input" id="login-pass" type="password" placeholder="••••••••" autocomplete="current-password"
+        onkeydown="if(event.key==='Enter') doLogin()">
+    </div>
+    <button class="login-btn" onclick="doLogin()">Ingresar</button>
+    <div class="login-error" id="login-error"></div>
+    <div class="login-skip" onclick="doSkip()">Solo visualización</div>
+  </div>
+</div>
+
 <script>
 /* ══════════════════════ FIREBASE / STORAGE ══════════════════════ */
 const FB_URL   = "https://sgc-bt-default-rtdb.firebaseio.com";
@@ -488,6 +607,7 @@ const FB_COTI  = "/pedcx/cotizaciones";
 const LS_PED   = "pedcx_ped_v1";
 const LS_PROV  = "pedcx_prov_v1";
 const LS_COTI  = "pedcx_coti_v1";
+const FB_USERS = "/pedcx/usuarios";
 
 async function fbGet(path){
   const r = await fetch(FB_URL + path + ".json");
@@ -504,6 +624,257 @@ async function fbSet(path, data){
 }
 function lsGet(k){ try{ return JSON.parse(localStorage.getItem(k)||"null"); }catch(e){ return null; } }
 function lsSet(k,v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
+
+/* ══════════════════════ USUARIOS / SESIÓN / PERMISOS ══════════════════════
+   permisos posibles: "pedidos" | "compras" | "proveedores" | "administracion"
+   ═══════════════════════════════════════════════════════════════════════ */
+const USUARIOS_DEFAULT = [
+  { id:"u1", usuario:"florencia", clave:"flor2026", permisos:["pedidos","compras","proveedores","administracion"] }
+];
+
+let usuariosDB = [];
+let sesionActual = null; // { id, usuario, permisos } | null
+
+async function cargarUsuarios(){
+  try{
+    const r = await fbGet(FB_USERS);
+    if(Array.isArray(r) && r.length){ usuariosDB = r; }
+    else if(r && typeof r === "object"){
+      usuariosDB = Object.values(r).filter(Boolean);
+      if(!usuariosDB.length) usuariosDB = [...USUARIOS_DEFAULT];
+    } else {
+      usuariosDB = [...USUARIOS_DEFAULT];
+    }
+  } catch(e){
+    usuariosDB = [...USUARIOS_DEFAULT];
+  }
+}
+
+function tienePermiso(seccion){
+  if(!sesionActual) return false;
+  return (sesionActual.permisos||[]).includes(seccion);
+}
+
+/* ── Timeout de sesión (8 horas de inactividad) ── */
+const SESSION_TIMEOUT_MS = 8*60*60*1000;
+let _sessionTimer = null;
+function resetSessionTimer(){
+  if(!sesionActual || sesionActual.id==="viewer") return;
+  clearTimeout(_sessionTimer);
+  try{ sessionStorage.setItem("pedcx_last_active", Date.now().toString()); }catch(e){}
+  _sessionTimer = setTimeout(()=>{ doLogout(); }, SESSION_TIMEOUT_MS);
+}
+function checkSessionTimeout(){
+  if(!sesionActual || sesionActual.id==="viewer") return;
+  try{
+    const last = parseInt(sessionStorage.getItem("pedcx_last_active")||"0");
+    if(last && (Date.now()-last) > SESSION_TIMEOUT_MS){ doLogout(); return; }
+  }catch(e){}
+  resetSessionTimer();
+}
+["click","keydown","mousemove","touchstart"].forEach(evt=>{
+  document.addEventListener(evt, ()=>{ if(sesionActual && sesionActual.id!=="viewer") resetSessionTimer(); }, {passive:true});
+});
+
+// Cerrar sesión al refrescar o cerrar la pestaña
+window.addEventListener("beforeunload", ()=>{
+  sessionStorage.removeItem("pedcx_session");
+  sessionStorage.removeItem("pedcx_last_active");
+});
+
+async function initSession(){
+  await cargarUsuarios();
+  try{
+    const saved = JSON.parse(sessionStorage.getItem("pedcx_session") || "null");
+    if(saved && saved.id){
+      sesionActual = saved;
+      checkSessionTimeout();
+      if(sesionActual){
+        ocultarLoginMostrarApp();
+        aplicarPermisos();
+        return;
+      }
+    }
+  } catch(e){}
+  document.getElementById("login-overlay").style.display = "flex";
+}
+
+async function doLogin(){
+  const userVal = document.getElementById("login-user").value.trim().toLowerCase();
+  const passVal = document.getElementById("login-pass").value;
+  const errEl = document.getElementById("login-error");
+  errEl.textContent = "";
+  if(!userVal || !passVal){ errEl.textContent = "Completá usuario y contraseña."; return; }
+  await cargarUsuarios();
+  const u = usuariosDB.find(u => String(u.usuario||"").toLowerCase()===userVal && u.clave===passVal);
+  if(!u){ errEl.textContent = "Usuario o contraseña incorrectos."; return; }
+  sesionActual = { id:u.id, usuario:u.usuario, permisos:u.permisos||[] };
+  sessionStorage.setItem("pedcx_session", JSON.stringify(sesionActual));
+  resetSessionTimer();
+  ocultarLoginMostrarApp();
+  aplicarPermisos();
+}
+
+function doSkip(){
+  sesionActual = { id:"viewer", usuario:"", permisos:[] };
+  sessionStorage.setItem("pedcx_session", JSON.stringify(sesionActual));
+  ocultarLoginMostrarApp();
+  aplicarPermisos();
+}
+
+function doLogout(){
+  clearTimeout(_sessionTimer);
+  sesionActual = null;
+  sessionStorage.removeItem("pedcx_session");
+  sessionStorage.removeItem("pedcx_last_active");
+  document.getElementById("login-user").value = "";
+  document.getElementById("login-pass").value = "";
+  document.getElementById("login-error").textContent = "";
+  document.getElementById("login-overlay").style.display = "flex";
+  const sb = document.getElementById("session-bar");
+  if(sb) sb.style.display = "none";
+  aplicarPermisos();
+}
+
+function ocultarLoginMostrarApp(){
+  document.getElementById("login-overlay").style.display = "none";
+  const sb = document.getElementById("session-bar");
+  if(sb){
+    sb.style.display = "flex";
+    const lbl = document.getElementById("session-user-label");
+    if(lbl) lbl.textContent = sesionActual.id==="viewer" ? "Solo visualización" : (sesionActual.usuario||"");
+  }
+  if(tienePermiso("administracion")) renderTablaUsuarios();
+}
+
+function aplicarPermisos(){
+  const puedeBasico    = tienePermiso("pedidos") || tienePermiso("compras");
+  const puedeCompras   = tienePermiso("compras");
+  const puedeProv      = tienePermiso("proveedores");
+  const puedeAdmin     = tienePermiso("administracion");
+
+  // Pedidos CX: campos básicos vs. campos exclusivos de compras
+  document.querySelectorAll("#ped-tbody tr").forEach(tr=>{
+    tr.querySelectorAll(".sol-sel, .ped-fpedido, .ped-paciente, .ped-medico, .ped-lugar, .ped-fcx, .ped-producto")
+      .forEach(el=> el.disabled = !puedeBasico);
+    tr.querySelectorAll(".prov-sel, .ped-fretiro, .ped-costo, .ped-oc, .sel-estado")
+      .forEach(el=> el.disabled = !puedeCompras);
+    tr.querySelectorAll(".acc-btns button, .acc-btns input, .del-btn")
+      .forEach(el=> el.disabled = !puedeBasico);
+    tr.querySelectorAll(".hist-btn").forEach(el=> el.disabled = false);
+  });
+  const btnPed = document.getElementById("btn-agregar-pedido");
+  if(btnPed) btnPed.disabled = !puedeBasico;
+
+  // Cotizaciones: todo requiere "compras"
+  document.querySelectorAll("#coti-list input, #coti-list select, #coti-list textarea, #coti-list button")
+    .forEach(el=> el.disabled = !puedeCompras);
+  const btnCoti = document.getElementById("btn-agregar-cotizacion");
+  if(btnCoti) btnCoti.disabled = !puedeCompras;
+  const rate = document.getElementById("coti-rate");
+  if(rate) rate.disabled = !puedeCompras;
+
+  // Proveedores CX: todo requiere "proveedores"
+  document.querySelectorAll("#prov-tbody input, #prov-tbody select, #prov-tbody button")
+    .forEach(el=> el.disabled = !puedeProv);
+  const btnProv = document.getElementById("btn-agregar-proveedor");
+  if(btnProv) btnProv.disabled = !puedeProv;
+
+  // Usuarios: pestaña visible solo con "administracion"
+  const navUsuarios = document.getElementById("nav-tab-usuarios");
+  if(navUsuarios) navUsuarios.style.display = puedeAdmin ? "" : "none";
+  if(!puedeAdmin){
+    const secUsuarios = document.getElementById("sec-usuarios");
+    if(secUsuarios && secUsuarios.classList.contains("active")){
+      document.querySelector('nav a[href="#sec-pedidos"]')?.click();
+    }
+  }
+  document.querySelectorAll("#tbody-usuarios input, #tbody-usuarios button")
+    .forEach(el=> el.disabled = !puedeAdmin);
+  const btnUser = document.getElementById("btn-agregar-usuario");
+  if(btnUser) btnUser.disabled = !puedeAdmin;
+
+  // Buscadores y botón de imprimir siempre habilitados (no requieren permiso de edición)
+  ["ped-search","coti-search"].forEach(id=>{ const el=document.getElementById(id); if(el) el.disabled=false; });
+}
+
+/* ── Gestión de usuarios (hoja Usuarios, solo administración) ── */
+function renderTablaUsuarios(){
+  const tb = document.getElementById("tbody-usuarios"); if(!tb) return;
+  tb.innerHTML = "";
+  const permisosDef = ["pedidos","compras","proveedores","administracion"];
+  usuariosDB.forEach((u,i)=>{
+    const tr = document.createElement("tr");
+    tr.dataset.uid = u.id || ("u"+Date.now()+i);
+    const permsHtml = permisosDef.map(p=>`
+      <label style="display:flex;align-items:center;gap:3px;font-size:11px;white-space:nowrap">
+        <input type="checkbox" class="perm-cb" value="${p}" ${(u.permisos||[]).includes(p)?"checked":""}>${p}
+      </label>`).join("");
+    tr.innerHTML = `
+      <td style="text-align:center;font-family:var(--mono);font-size:11px;color:var(--text-3)">${i+1}</td>
+      <td><input class="ti" type="text" value="${esc(u.usuario||"")}" placeholder="usuario"></td>
+      <td><input class="ti" type="text" value="${esc(u.clave||"")}" placeholder="Contraseña"></td>
+      <td style="display:flex;gap:8px;flex-wrap:wrap;padding:6px 4px">${permsHtml}</td>
+      <td style="text-align:center;padding:4px" class="no-print"><button class="del-btn" onclick="this.closest('tr').remove()">×</button></td>`;
+    tb.appendChild(tr);
+  });
+}
+
+function addUsuarioRow(){
+  if(!tienePermiso("administracion")) return;
+  const tb = document.getElementById("tbody-usuarios"); if(!tb) return;
+  const i = tb.querySelectorAll("tr").length;
+  const tr = document.createElement("tr");
+  tr.dataset.uid = "u"+Date.now();
+  const permisosDef = ["pedidos","compras","proveedores","administracion"];
+  const permsHtml = permisosDef.map(p=>`
+    <label style="display:flex;align-items:center;gap:3px;font-size:11px;white-space:nowrap">
+      <input type="checkbox" class="perm-cb" value="${p}">${p}
+    </label>`).join("");
+  tr.innerHTML = `
+    <td style="text-align:center;font-family:var(--mono);font-size:11px;color:var(--text-3)">${i+1}</td>
+    <td><input class="ti" type="text" placeholder="usuario"></td>
+    <td><input class="ti" type="text" placeholder="Contraseña"></td>
+    <td style="display:flex;gap:8px;flex-wrap:wrap;padding:6px 4px">${permsHtml}</td>
+    <td style="text-align:center;padding:4px" class="no-print"><button class="del-btn" onclick="this.closest('tr').remove()">×</button></td>`;
+  tb.appendChild(tr);
+  scheduleSaveUsuarios();
+}
+
+let saveTimerUsuarios=null;
+function scheduleSaveUsuarios(){ clearTimeout(saveTimerUsuarios); saveTimerUsuarios=setTimeout(guardarUsuarios,1200); }
+document.addEventListener("input", e=>{ if(e.target.closest("#tbody-usuarios")) scheduleSaveUsuarios(); });
+document.addEventListener("change", e=>{ if(e.target.closest("#tbody-usuarios")) scheduleSaveUsuarios(); });
+
+async function guardarUsuarios(){
+  if(!tienePermiso("administracion")) return;
+  const rows = [...document.querySelectorAll("#tbody-usuarios tr")];
+  const nuevos = rows.map(tr=>{
+    const inputs = tr.querySelectorAll("input.ti");
+    const perms = [...tr.querySelectorAll(".perm-cb:checked")].map(cb=>cb.value);
+    return {
+      id: tr.dataset.uid || ("u"+Date.now()+Math.random().toString(36).slice(2,6)),
+      usuario: inputs[0]?.value.trim().toLowerCase() || "",
+      clave: inputs[1]?.value || "",
+      permisos: perms
+    };
+  }).filter(u=>u.usuario && u.clave);
+  if(!nuevos.length) return;
+  try{
+    await fbSet(FB_USERS, nuevos);
+    usuariosDB = nuevos;
+    setInlineStatus("users-st", "✓ Guardado " + new Date().toLocaleTimeString(), "ok");
+    const yo = usuariosDB.find(u=>u.id === sesionActual?.id);
+    if(yo){
+      sesionActual = { id:yo.id, usuario:yo.usuario, permisos:yo.permisos||[] };
+      sessionStorage.setItem("pedcx_session", JSON.stringify(sesionActual));
+    }
+    aplicarPermisos();
+  } catch(e){
+    setInlineStatus("users-st", "Error al guardar", "dirty");
+  }
+}
+
 
 function setSyncStatus(text, cls=""){
   const el = document.getElementById("syncStatus");
@@ -605,19 +976,26 @@ function validEmailFmt(v){ return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v); }
 /* ══════════════════════ CONSTANTES ══════════════════════ */
 const SOLICITANTES = ["Candela","Diego Varela","Luis","Cinthia","Martin Michanie"];
 const PED_ESTADOS = [
-  ["reclamo",    "RECLAMO"],
-  ["pendpago",   "PEND DE PAGO"],
-  ["proceso",    "EN PROCESO"],
-  ["cotiz",      "BAJO COTIZACION"],
   ["noiniciado", "NO INICIADO"],
-  ["pagado",     "PAGADO"]
+  ["cotiz",      "BAJO COTIZACION"],
+  ["proceso",    "EN PROCESO"],
+  ["pausado",    "PAUSADO"],
+  ["pendpago",   "PEND DE PAGO"],
+  ["pagado",     "PAGADO"],
+  ["reclamo",    "RECLAMO"]
 ];
-const PED_ORDEN = { reclamo:1, pendpago:2, proceso:3, cotiz:4, noiniciado:5, pagado:6 };
+const PED_ORDEN = { noiniciado:1, cotiz:2, proceso:3, pausado:4, pendpago:5, pagado:6, reclamo:7 };
+const PED_FIELD_LABELS = {
+  solicitante:"Solicitante", fpedido:"Fecha de pedido", paciente:"Paciente", medico:"Médico",
+  lugar:"Lugar de CX", fcx:"Fecha CX", producto:"Producto", proveedor:"Proveedor",
+  fretiro:"Fecha de retiro", costo:"Costo sin IVA", oc:"OC", estado:"Estado"
+};
 
 const PED_DELETE_KEY = "2026"; // clave para poder eliminar un pedido de forma permanente (cambiarla acá si querés otra)
 const COPY_ICON = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>`;
 const CHECK_ICON = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
 const CAMERA_ICON = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>`;
+const HISTORY_ICON = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v5h5"></path><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"></path><path d="M12 7v5l4 2"></path></svg>`;
 
 const PROV_DEFAULT = [
  ["Axmec","ventasbsas.axm@gmail.com","daniela","osteosintesis"],
@@ -715,20 +1093,23 @@ const Ped = {
   },
   updateKpis(){
     const trs=[...document.querySelectorAll("#ped-tbody tr")];
-    const counts={reclamo:0,pendpago:0,proceso:0,cotiz:0,pagado:0};
-    let total=0;
+    const counts={noiniciado:0,cotiz:0,proceso:0,pausado:0,pendpago:0,pagado:0,reclamo:0};
+    let total=0, anulados=0;
     trs.forEach(tr=>{
-      if(tr.classList.contains("row-anulado")) return;
+      if(tr.classList.contains("row-anulado")){ anulados++; return; }
       total++;
       const v=tr.querySelector(".sel-estado")?.value;
       if(counts[v]!==undefined) counts[v]++;
     });
     document.getElementById("k-total").textContent=total;
-    document.getElementById("k-reclamo").textContent=counts.reclamo;
-    document.getElementById("k-pendpago").textContent=counts.pendpago;
-    document.getElementById("k-proceso").textContent=counts.proceso;
+    document.getElementById("k-noiniciado").textContent=counts.noiniciado;
     document.getElementById("k-cotiz").textContent=counts.cotiz;
+    document.getElementById("k-proceso").textContent=counts.proceso;
+    document.getElementById("k-pausado").textContent=counts.pausado;
+    document.getElementById("k-pendpago").textContent=counts.pendpago;
     document.getElementById("k-pagado").textContent=counts.pagado;
+    document.getElementById("k-anulados").textContent=anulados;
+    document.getElementById("k-reclamo").textContent=counts.reclamo;
   },
   filtrar(term){
     term=(term||"").trim().toLowerCase();
@@ -778,6 +1159,7 @@ const Ped = {
               <button class="btn btn-light btn-sm btn-icon" onclick="Ped.copiar(this)" title="Copiar" aria-label="Copiar">${COPY_ICON}</button>
               <button class="btn btn-light btn-sm btn-icon" onclick="this.nextElementSibling.click()" title="Adjuntar foto" aria-label="Adjuntar foto">${CAMERA_ICON}</button>
               <input type="file" accept="image/*" multiple class="foto-input" style="display:none" onchange="Ped.onFotoSelect(this)">
+              <button class="btn btn-light btn-sm btn-icon hist-btn" onclick="Ped.verHistorial(this)" title="Ver historial de cambios" aria-label="Historial">${HISTORY_ICON}</button>
             </div>
             <div class="acc-btns-row">
               <button class="btn btn-danger btn-sm" onclick="Ped.toggleAnular(this)">${d.anulado&&d.anulado.si?"Reactivar":"Anular"}</button>
@@ -789,7 +1171,9 @@ const Ped = {
         </div>
       </td>`;
     tr.__fotos = Array.isArray(d.fotos) ? d.fotos.slice() : [];
+    tr.__historial = Array.isArray(d.historial) ? d.historial.slice() : [];
     Ped.renderFotos(tr);
+    tr.__snapshot = Ped._rowSnapshot(tr);
     return tr;
   },
   renderFotos(tr){
@@ -828,6 +1212,56 @@ const Ped = {
     Ped.renderFotos(tr);
     mkDirty("ped-st");
     scheduleSavePed();
+  },
+  _rowSnapshot(tr){
+    const g=(cls)=>tr.querySelector(cls)?.value||"";
+    const estadoCode = tr.querySelector(".sel-estado")?.value||"noiniciado";
+    const estadoLabel = (PED_ESTADOS.find(e=>e[0]===estadoCode)||[null,estadoCode])[1];
+    return {
+      solicitante: tr.querySelector(".sol-sel")?.value||"",
+      fpedido:  g(".ped-fpedido"),
+      paciente: g(".ped-paciente"),
+      medico:   g(".ped-medico"),
+      lugar:    g(".ped-lugar"),
+      fcx:      g(".ped-fcx"),
+      producto: g(".ped-producto"),
+      proveedor: tr.querySelector(".prov-sel")?.value||"",
+      fretiro:  g(".ped-fretiro"),
+      costo:    g(".ped-costo"),
+      oc:       g(".ped-oc"),
+      estado:   estadoLabel
+    };
+  },
+  diffAndRecord(tr){
+    const now = Ped._rowSnapshot(tr);
+    const prev = tr.__snapshot;
+    if(!prev){ tr.__snapshot = now; return; }
+    const cambios = [];
+    Object.keys(now).forEach(k=>{
+      if(now[k] !== prev[k]){
+        cambios.push({campo: PED_FIELD_LABELS[k]||k, antes: prev[k], despues: now[k]});
+      }
+    });
+    if(cambios.length){
+      if(!tr.__historial) tr.__historial=[];
+      tr.__historial.push({ts:Date.now(), usuario:(sesionActual&&sesionActual.usuario)||"", cambios});
+    }
+    tr.__snapshot = now;
+  },
+  verHistorial(btn){
+    const tr = btn.closest("tr");
+    const hist = tr.__historial || [];
+    const body = document.getElementById("historialBody");
+    if(!hist.length){
+      body.innerHTML = `<div class="coti-empty">Todavía no hay cambios registrados para este pedido.</div>`;
+    } else {
+      body.innerHTML = hist.slice().reverse().map(h=>{
+        const fecha = new Date(h.ts).toLocaleString("es-AR");
+        const cambios = h.cambios.map(c=>`<div class="hist-campo"><b>${esc(c.campo)}:</b> <span class="hist-old">${esc(c.antes||"—")}</span> → <span class="hist-new">${esc(c.despues||"—")}</span></div>`).join("");
+        return `<div class="hist-entry"><div class="hist-meta">${esc(fecha)}${h.usuario?(" — "+esc(h.usuario)):""}</div>${cambios}</div>`;
+      }).join("");
+    }
+    document.getElementById("historialOverlay").classList.add("open");
   },
   copiar(btn){
     const tr=btn.closest("tr");
@@ -880,8 +1314,11 @@ const Ped = {
   addRow(){
     const tb=document.getElementById("ped-tbody");
     const tr = Ped._buildTr({fpedido:hoyDisplay(),estado:"noiniciado"});
-    tb.appendChild(tr);
-    Ped.sortRows(); mkDirty("ped-st");
+    tb.insertBefore(tr, tb.firstChild);
+    Ped._renum();
+    Ped.updateKpis();
+    mkDirty("ped-st");
+    aplicarPermisos();
   },
   _ser(){
     return [...document.querySelectorAll("#ped-tbody tr")].map(tr=>{
@@ -905,7 +1342,8 @@ const Ped = {
           quien: tr.dataset.anuladoQuien||"",
           motivo: tr.dataset.anuladoMotivo||""
         },
-        fotos: tr.__fotos || []
+        fotos: tr.__fotos || [],
+        historial: tr.__historial || []
       };
     });
   },
@@ -931,6 +1369,7 @@ const Ped = {
     });
   },
   async save(){
+    document.querySelectorAll("#ped-tbody tr").forEach(tr=>Ped.diffAndRecord(tr));
     const rows=Ped._ser(), pay={rows,ts:Date.now()};
     lsSet(LS_PED,pay);
     try{ await fbSet(FB_PED,pay); lastPedTs=pay.ts; setSyncStatus("En vivo","sync-ok"); }
@@ -1027,6 +1466,7 @@ const Prov = {
     const tb=document.getElementById("prov-tbody");
     tb.appendChild(Prov._buildTr({}));
     Prov._renum(); mkDirty("prov-st");
+    aplicarPermisos();
   },
   elim(btn){
     const tr=btn.closest("tr");
@@ -1210,6 +1650,7 @@ const Coti = {
     const list=document.getElementById("coti-list");
     list.appendChild(Coti._buildCard({}));
     mkDirty("coti-st");
+    aplicarPermisos();
   },
   eliminarCard(btn){
     if(!confirm("¿Eliminar esta cotización?")) return;
@@ -1350,6 +1791,7 @@ async function loadAll(){
       lastCotiTs = Date.now();
     }
     Coti.restore(cotiFinal);
+    aplicarPermisos();
 
     setSyncStatus("En vivo","sync-ok");
   } catch(e){
@@ -1360,6 +1802,7 @@ async function loadAll(){
     Ped.restore(lPed.rows||[]);
     Ped.refreshProveedorSelects();
     Coti.restore(lCoti.rows||[]);
+    aplicarPermisos();
     setSyncStatus("Sin conexión","sync-error");
   }
 }
@@ -1387,6 +1830,7 @@ setInterval(async ()=>{
       lsSet(LS_COTI, remoteCoti);
       Coti.restore(remoteCoti.rows||[]);
     }
+    aplicarPermisos();
     setSyncStatus("En vivo","sync-ok");
   } catch(e){
     setSyncStatus("Sin conexión","sync-error");
@@ -1427,6 +1871,7 @@ setInterval(()=>refreshDolarRate(false), 30*60000);
 window.addEventListener("DOMContentLoaded", ()=>{
   loadAll();
   refreshDolarRate(false);
+  initSession();
 });
 </script>
 </body>
