@@ -469,6 +469,11 @@ select option{background-color:#fff!important;background-image:none!important;co
 
       <div class="card-body">
         <div class="sec-title">Proveedores<span class="sync-inline" id="prov-st">—</span></div>
+
+        <div class="search-row no-print">
+          <input type="text" class="search-input" id="prov-search" placeholder="Buscar por empresa, correo, contacto o categoría..." oninput="Prov.filtrar(this.value)">
+        </div>
+
         <div class="tbl-wrap">
           <table class="tbl">
             <colgroup>
@@ -532,7 +537,7 @@ select option{background-color:#fff!important;background-image:none!important;co
         <button class="add-row-btn no-print" id="btn-agregar-usuario" onclick="addUsuarioRow()">+ Agregar usuario</button>
         <div style="margin-top:14px;padding:10px 12px;background:var(--bg);border-radius:var(--radius);border:1px solid var(--border);font-size:11px;color:var(--text-2)">
           <strong>Permisos:</strong>
-          <span style="margin-left:8px"><strong>pedidos</strong> — puede editar Solicitante, Fecha de pedido, Paciente, Médico, Lugar de CX, Fecha CX, Producto y Acciones</span>
+          <span style="margin-left:8px"><strong>pedidos</strong> — puede editar Solicitante, Fecha de pedido, Paciente, Médico, Lugar de CX, Fecha CX, Producto, Proveedor y Acciones</span>
           <span style="margin-left:8px"><strong>compras</strong> — hoja de Pedidos CX completa + Cotizaciones completa</span>
           <span style="margin-left:8px"><strong>proveedores</strong> — hoja de Proveedores CX completa</span>
           <span style="margin-left:8px"><strong>administracion</strong> — gestión de usuarios</span>
@@ -755,9 +760,9 @@ function aplicarPermisos(){
 
   // Pedidos CX: campos básicos vs. campos exclusivos de compras
   document.querySelectorAll("#ped-tbody tr").forEach(tr=>{
-    tr.querySelectorAll(".sol-sel, .ped-fpedido, .ped-paciente, .ped-medico, .ped-lugar, .ped-fcx, .ped-producto")
+    tr.querySelectorAll(".sol-sel, .ped-fpedido, .ped-paciente, .ped-medico, .ped-lugar, .ped-fcx, .ped-producto, .prov-sel")
       .forEach(el=> el.disabled = !puedeBasico);
-    tr.querySelectorAll(".prov-sel, .ped-fretiro, .ped-costo, .ped-oc, .sel-estado")
+    tr.querySelectorAll(".ped-fretiro, .ped-costo, .ped-oc, .sel-estado")
       .forEach(el=> el.disabled = !puedeCompras);
     tr.querySelectorAll(".acc-btns button, .acc-btns input, .del-btn")
       .forEach(el=> el.disabled = !puedeBasico);
@@ -795,7 +800,7 @@ function aplicarPermisos(){
   if(btnUser) btnUser.disabled = !puedeAdmin;
 
   // Buscadores y botón de imprimir siempre habilitados (no requieren permiso de edición)
-  ["ped-search","coti-search"].forEach(id=>{ const el=document.getElementById(id); if(el) el.disabled=false; });
+  ["ped-search","coti-search","prov-search"].forEach(id=>{ const el=document.getElementById(id); if(el) el.disabled=false; });
 }
 
 /* ── Gestión de usuarios (hoja Usuarios, solo administración) ── */
@@ -1456,6 +1461,15 @@ const Prov = {
     });
     trs.forEach(tr=>tb.appendChild(tr));
     Prov._renum();
+  },
+  filtrar(term){
+    term=(term||"").trim().toLowerCase();
+    document.querySelectorAll("#prov-tbody tr").forEach(tr=>{
+      if(!term){ tr.style.display=""; return; }
+      const campos=[".prov-empresa",".prov-correo",".prov-contacto",".prov-categoria"];
+      const texto = campos.map(cls=>tr.querySelector(cls)?.value||"").join(" ").toLowerCase();
+      tr.style.display = texto.includes(term) ? "" : "none";
+    });
   },
   _renum(){
     [...document.querySelectorAll("#prov-tbody tr")].forEach((r,i)=>{
