@@ -446,8 +446,8 @@ select option{background-color:#fff!important;background-image:none!important;co
           <span class="coti-rate-note" id="coti-rate-note"></span>
         </div>
 
-        <div class="coti-list" id="coti-list"></div>
         <button class="add-row-btn no-print" id="btn-agregar-cotizacion" onclick="Coti.addCard()">+ Agregar cotización</button>
+        <div class="coti-list" id="coti-list"></div>
       </div>
     </div>
   </div>
@@ -476,6 +476,8 @@ select option{background-color:#fff!important;background-image:none!important;co
           <input type="text" class="search-input" id="prov-search" placeholder="Buscar por empresa, correo, contacto o categoría..." oninput="Prov.filtrar(this.value)">
         </div>
 
+        <button class="add-row-btn no-print" id="btn-agregar-proveedor" onclick="Prov.addRow()">+ Agregar proveedor</button>
+
         <div class="tbl-wrap">
           <table class="tbl">
             <colgroup>
@@ -499,7 +501,6 @@ select option{background-color:#fff!important;background-image:none!important;co
             <tbody id="prov-tbody"></tbody>
           </table>
         </div>
-        <button class="add-row-btn no-print" id="btn-agregar-proveedor" onclick="Prov.addRow()">+ Agregar proveedor</button>
       </div>
     </div>
   </div>
@@ -899,7 +900,12 @@ function mkSaved(id){ setInlineStatus(id, "✓ Guardado " + new Date().toLocaleT
 /* ══════════════════════ HELPERS GENERALES ══════════════════════ */
 function esc(s){ return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
 function genId(){ return "id"+Date.now().toString(36)+Math.random().toString(36).slice(2,8); }
-function autoGrow(el){ el.style.height="auto"; el.style.height=el.scrollHeight+"px"; }
+function autoGrow(el){
+  el.style.height="auto";
+  const cs = getComputedStyle(el);
+  const borderY = parseFloat(cs.borderTopWidth||0) + parseFloat(cs.borderBottomWidth||0);
+  el.style.height = (el.scrollHeight + borderY) + "px";
+}
 function upperKeepCursor(el){
   const s=el.selectionStart, e=el.selectionEnd;
   el.value=el.value.toUpperCase();
@@ -927,6 +933,17 @@ function fileToCompressedDataUrl(file){
   });
 }
 document.addEventListener("input", e=>{ if(e.target.classList.contains("ta")) autoGrow(e.target); });
+
+// Recalcular alturas cuando termina de cargar la tipografía (las medidas cambian levemente con la fuente real)
+if(document.fonts && document.fonts.ready){
+  document.fonts.ready.then(()=>{ document.querySelectorAll(".cta").forEach(autoGrow); });
+}
+// Recalcular alturas al cambiar el ancho de ventana (ej: al pasar al layout mobile en tabla-a-tarjetas)
+let _resizeAutoGrowT=null;
+window.addEventListener("resize", ()=>{
+  clearTimeout(_resizeAutoGrowT);
+  _resizeAutoGrowT=setTimeout(()=>{ document.querySelectorAll(".cta").forEach(autoGrow); }, 150);
+});
 
 function toDisplay(iso){
   if(!iso) return "";
@@ -1326,6 +1343,7 @@ const Ped = {
     Ped.updateKpis();
     mkDirty("ped-st");
     aplicarPermisos();
+    requestAnimationFrame(()=>{ tr.querySelectorAll(".cta").forEach(autoGrow); });
   },
   _ser(){
     return [...document.querySelectorAll("#ped-tbody tr")].map(tr=>{
@@ -1481,7 +1499,7 @@ const Prov = {
   addRow(){
     const tb=document.getElementById("prov-tbody");
     tb.appendChild(Prov._buildTr({}));
-    Prov._renum(); mkDirty("prov-st");
+    Prov.sortRows(); mkDirty("prov-st");
     aplicarPermisos();
   },
   elim(btn){
@@ -1664,7 +1682,7 @@ const Coti = {
   },
   addCard(){
     const list=document.getElementById("coti-list");
-    list.appendChild(Coti._buildCard({}));
+    list.insertBefore(Coti._buildCard({}), list.firstChild);
     mkDirty("coti-st");
     aplicarPermisos();
   },
