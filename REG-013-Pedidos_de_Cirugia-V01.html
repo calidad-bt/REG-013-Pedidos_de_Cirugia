@@ -127,6 +127,8 @@ table.tbl{border-collapse:collapse;width:100%;table-layout:fixed;}
 .date-picker-hidden{position:absolute;right:0;top:0;width:20px;height:100%;opacity:0;pointer-events:none;}
 .money-in{text-align:right;font-family:var(--mono);}
 .oc-in{text-align:center;font-family:var(--mono);}
+.dt-cell{display:flex;flex-direction:column;gap:3px;}
+.hora-in{font-family:var(--mono);text-align:center;}
 
 /* ESTADO PEDIDO */
 .pe-noiniciado{background-color:#F0F1F3!important;color:var(--text-2)!important;border-color:var(--border)!important;}
@@ -176,6 +178,7 @@ select option{background-color:#fff!important;background-image:none!important;co
 .coti-prov-row{display:flex;flex-wrap:wrap;align-items:flex-start;gap:6px;padding:5px 6px;border:1px solid var(--border);border-radius:3px;}
 .coti-prov-num{font-family:var(--mono);font-size:10.5px;color:var(--text-3);flex:0 0 16px;padding-top:6px;text-align:center;}
 .coti-prov-field{flex:1 1 150px;min-width:0;}
+.coti-prov-field.f-archivos{flex:0 0 auto;min-width:44px;}
 .coti-prov-otro{margin-top:4px;}
 .coti-empty{padding:10px 8px;color:var(--text-3);font-size:11.5px;font-style:italic;}
 
@@ -210,6 +213,10 @@ select option{background-color:#fff!important;background-image:none!important;co
 .foto-thumb-wrap{position:relative;width:34px;height:34px;flex:0 0 auto;}
 .foto-thumb{width:34px;height:34px;object-fit:cover;border-radius:3px;border:1px solid var(--border);cursor:pointer;display:block;}
 .foto-del{position:absolute;top:-6px;right:-6px;width:16px;height:16px;border-radius:50%;background:var(--err-bg);border:1px solid var(--err-bd);color:var(--err-text);font-size:10px;line-height:1;cursor:pointer;padding:0;}
+.coti-archivo-row{display:flex;align-items:flex-start;gap:6px;}
+.coti-archivo-thumbs{display:flex;flex-wrap:wrap;gap:5px;}
+.coti-archivo-thumb{position:relative;width:34px;height:34px;flex:0 0 auto;}
+.archivo-pdf-badge{width:34px;height:34px;display:flex;align-items:center;justify-content:center;border:1px solid var(--border);border-radius:3px;background:var(--accent-l);color:var(--accent-d);font-family:var(--mono);font-size:9px;font-weight:700;text-decoration:none;}
 .hist-entry{border-bottom:1px solid var(--border);padding:8px 0;}
 .hist-entry:last-child{border-bottom:none;}
 .hist-meta{font-size:10px;color:var(--text-3);margin-bottom:4px;font-family:var(--mono);}
@@ -346,7 +353,7 @@ select option{background-color:#fff!important;background-image:none!important;co
           <div class="doc-subtitle">Solicitud, seguimiento y estado de pedidos de productos para cirugías</div>
         </div>
         <div class="doc-meta">
-          <div class="meta-cell"><span class="meta-label">Aprobación</span><span class="meta-value">—</span></div>
+          <div class="meta-cell"><span class="meta-label">Aprobación</span><span class="meta-value">28/07/2026</span></div>
           <div class="meta-cell"><span class="meta-label">Entrada en vigor</span><span class="meta-value">28/07/2026</span></div>
           <div class="meta-cell"><span class="meta-label">Código</span><span class="meta-value">REG-013</span></div>
           <div class="meta-cell"><span class="meta-label">Versión</span><span class="meta-value">01</span></div>
@@ -388,30 +395,34 @@ select option{background-color:#fff!important;background-image:none!important;co
           <table class="tbl">
             <colgroup>
               <col style="width:2%">  <!-- #             -->
-              <col style="width:9%">  <!-- Solicitante   -->
+              <col style="width:7%">  <!-- Solicitante   -->
               <col style="width:6%">  <!-- Fecha pedido  -->
+              <col style="width:6%">  <!-- Fecha necesidad -->
               <col style="width:7%">  <!-- Paciente      -->
               <col style="width:7%">  <!-- Médico        -->
               <col style="width:7%">  <!-- Lugar de CX   -->
               <col style="width:6%">  <!-- Fecha CX      -->
-              <col style="width:11%"> <!-- Producto      -->
-              <col style="width:11%">  <!-- Proveedor     -->
+              <col style="width:10%"> <!-- Producto      -->
+              <col style="width:9%">  <!-- Proveedores sugeridos -->
+              <col style="width:9%">  <!-- Proveedor     -->
               <col style="width:6%">  <!-- Fecha retiro  -->
-              <col style="width:7%">  <!-- Costo sin IVA -->
+              <col style="width:6%">  <!-- Costo sin IVA -->
               <col style="width:4%">  <!-- OC            -->
-              <col style="width:9%">  <!-- Estado        -->
-              <col style="width:9%"> <!-- Acciones      -->
+              <col style="width:8%">  <!-- Estado        -->
+              <col style="width:8%"> <!-- Acciones      -->
             </colgroup>
             <thead>
               <tr>
                 <th>#</th>
                 <th>Solicitante</th>
                 <th>Fecha pedido</th>
+                <th>Fecha necesidad</th>
                 <th>Paciente</th>
                 <th>Médico</th>
                 <th>Lugar de CX</th>
                 <th>Fecha CX</th>
                 <th>Producto</th>
+                <th>Proveedores sugeridos</th>
                 <th>Proveedor</th>
                 <th>Fecha retiro</th>
                 <th>Costo sin IVA</th>
@@ -437,7 +448,7 @@ select option{background-color:#fff!important;background-image:none!important;co
           <div class="doc-subtitle">Pedidos de cotización a proveedores por paciente y producto</div>
         </div>
         <div class="doc-meta">
-          <div class="meta-cell"><span class="meta-label">Aprobación</span><span class="meta-value">—</span></div>
+          <div class="meta-cell"><span class="meta-label">Aprobación</span><span class="meta-value">28/07/2026</span></div>
           <div class="meta-cell"><span class="meta-label">Entrada en vigor</span><span class="meta-value">28/07/2026</span></div>
           <div class="meta-cell"><span class="meta-label">Código</span><span class="meta-value">REG-013</span></div>
           <div class="meta-cell"><span class="meta-label">Versión</span><span class="meta-value">01</span></div>
@@ -475,7 +486,7 @@ select option{background-color:#fff!important;background-image:none!important;co
           <div class="doc-subtitle">Listado de proveedores de productos e insumos para cirugías</div>
         </div>
         <div class="doc-meta">
-          <div class="meta-cell"><span class="meta-label">Aprobación</span><span class="meta-value">—</span></div>
+          <div class="meta-cell"><span class="meta-label">Aprobación</span><span class="meta-value">28/07/2026</span></div>
           <div class="meta-cell"><span class="meta-label">Entrada en vigor</span><span class="meta-value">28/07/2026</span></div>
           <div class="meta-cell"><span class="meta-label">Código</span><span class="meta-value">REG-013</span></div>
           <div class="meta-cell"><span class="meta-label">Versión</span><span class="meta-value">01</span></div>
@@ -528,7 +539,7 @@ select option{background-color:#fff!important;background-image:none!important;co
           <div class="doc-subtitle">Acceso restringido — solo administración</div>
         </div>
         <div class="doc-meta">
-          <div class="meta-cell"><span class="meta-label">Aprobación</span><span class="meta-value">—</span></div>
+          <div class="meta-cell"><span class="meta-label">Aprobación</span><span class="meta-value">28/07/2026</span></div>
           <div class="meta-cell"><span class="meta-label">Entrada en vigor</span><span class="meta-value">28/07/2026</span></div>
           <div class="meta-cell"><span class="meta-label">Código</span><span class="meta-value">REG-013</span></div>
           <div class="meta-cell"><span class="meta-label">Versión</span><span class="meta-value">01</span></div>
@@ -553,8 +564,8 @@ select option{background-color:#fff!important;background-image:none!important;co
         <button class="add-row-btn no-print" id="btn-agregar-usuario" onclick="addUsuarioRow()">+ Agregar usuario</button>
         <div style="margin-top:14px;padding:10px 12px;background:var(--bg);border-radius:var(--radius);border:1px solid var(--border);font-size:11px;color:var(--text-2)">
           <strong>Permisos:</strong>
-          <span style="margin-left:8px"><strong>pedidos</strong> — puede editar Solicitante, Fecha de pedido, Paciente, Médico, Lugar de CX, Fecha CX, Producto, Proveedor y Acciones</span>
-          <span style="margin-left:8px"><strong>compras</strong> — hoja de Pedidos CX completa + Cotizaciones completa</span>
+          <span style="margin-left:8px"><strong>pedidos</strong> — puede editar Solicitante, Fecha de pedido, Fecha de necesidad, Paciente, Médico, Lugar de CX, Fecha CX, Producto, Proveedores sugeridos y Acciones (sin la columna Proveedor)</span>
+          <span style="margin-left:8px"><strong>compras</strong> — hoja de Pedidos CX completa (incluye Proveedor) + Cotizaciones completa</span>
           <span style="margin-left:8px"><strong>proveedores</strong> — hoja de Proveedores CX completa</span>
           <span style="margin-left:8px"><strong>administracion</strong> — gestión de usuarios</span>
         </div>
@@ -776,8 +787,11 @@ function aplicarPermisos(){
 
   // Pedidos CX: campos básicos vs. campos exclusivos de compras
   document.querySelectorAll("#ped-tbody tr").forEach(tr=>{
-    tr.querySelectorAll(".sol-sel, .ped-fpedido, .ped-paciente, .ped-medico, .ped-lugar, .ped-fcx, .ped-producto, .prov-sel")
+    tr.querySelectorAll(".sol-sel, .ped-fpedido, .ped-fnecesidad, .ped-hnecesidad, .ped-paciente, .ped-medico, .ped-lugar, .ped-fcx, .ped-producto, .ped-provsug")
       .forEach(el=> el.disabled = !puedeBasico);
+    // Columna Proveedor: exclusiva del permiso "compras" (pedidos no la habilita)
+    tr.querySelectorAll(".prov-sel")
+      .forEach(el=> el.disabled = !puedeCompras);
     tr.querySelectorAll(".ped-fretiro, .ped-costo, .ped-oc, .sel-estado")
       .forEach(el=> el.disabled = !puedeCompras);
     tr.querySelectorAll(".acc-btns button, .acc-btns input, .del-btn")
@@ -945,6 +959,18 @@ function fileToCompressedDataUrl(file){
     reader.readAsDataURL(file);
   });
 }
+function fileToAttachment(file){
+  return new Promise((resolve, reject)=>{
+    if(file.type === "application/pdf"){
+      const reader = new FileReader();
+      reader.onload = e=> resolve({name:file.name, type:"pdf", data:e.target.result});
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    } else {
+      fileToCompressedDataUrl(file).then(data=> resolve({name:file.name, type:"image", data})).catch(reject);
+    }
+  });
+}
 document.addEventListener("input", e=>{ if(e.target.classList.contains("ta")) autoGrow(e.target); });
 
 // Recalcular alturas cuando termina de cargar la tipografía (las medidas cambian levemente con la fuente real)
@@ -984,6 +1010,11 @@ function maskFecha(el){
   else if(vl.length>2) vl=vl.slice(0,2)+"/"+vl.slice(2);
   el.value=vl;
 }
+function maskHora(el){
+  let vl=el.value.replace(/\D/g,"").slice(0,4);
+  if(vl.length>2) vl=vl.slice(0,2)+":"+vl.slice(2);
+  el.value=vl;
+}
 function abrirPickerFecha(inp){
   const picker=inp.nextElementSibling;
   if(!picker) return;
@@ -994,6 +1025,18 @@ function abrirPickerFecha(inp){
 function pickFecha(picker, cb){
   const inp=picker.previousElementSibling;
   if(inp && picker.value){ inp.value=toDisplay(picker.value); if(cb) cb(inp); }
+  picker.style.pointerEvents="none"; picker.style.zIndex="";
+}
+function abrirPickerHora(inp){
+  const picker=inp.nextElementSibling;
+  if(!picker) return;
+  picker.value = /^\d{2}:\d{2}$/.test(inp.value) ? inp.value : "";
+  picker.style.pointerEvents="auto"; picker.style.zIndex="9999";
+  try{ picker.showPicker(); }catch(e){ picker.click(); }
+}
+function pickHora(picker, cb){
+  const inp=picker.previousElementSibling;
+  if(inp && picker.value){ inp.value=picker.value; if(cb) cb(inp); }
   picker.style.pointerEvents="none"; picker.style.zIndex="";
 }
 function hoyDisplay(){
@@ -1007,6 +1050,28 @@ function maskMoney(el){
   el.value = "$ " + Number(digits).toLocaleString("es-AR");
 }
 function moneyDigits(v){ return String(v||"").replace(/\D/g,""); }
+function maskUsd(el){
+  let v = el.value.replace(/[^\d,]/g,"");
+  const parts = v.split(",");
+  let intPart = parts[0].replace(/^0+(?=\d)/,"");
+  intPart = intPart.replace(/\B(?=(\d{3})+(?!\d))/g,".");
+  if(parts.length>1){
+    const decPart = parts.slice(1).join("").slice(0,2);
+    el.value = intPart + "," + decPart;
+  } else {
+    el.value = intPart;
+  }
+}
+function usdDigits(v){
+  if(!v) return "";
+  const n = String(v).replace(/\./g,"").replace(",", ".");
+  return n;
+}
+function formatUsdDisplay(v){
+  const n = parseFloat(usdDigits(v))||0;
+  if(!n) return "";
+  return n.toLocaleString("es-AR",{minimumFractionDigits:2,maximumFractionDigits:2});
+}
 function maskOC(el){ el.value = el.value.replace(/\D/g,""); }
 function validEmailFmt(v){ return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v); }
 
@@ -1023,8 +1088,9 @@ const PED_ESTADOS = [
 ];
 const PED_ORDEN = { noiniciado:1, cotiz:2, proceso:3, pausado:4, pendpago:5, pagado:6, reclamo:7 };
 const PED_FIELD_LABELS = {
-  solicitante:"Solicitante", fpedido:"Fecha de pedido", paciente:"Paciente", medico:"Médico",
-  lugar:"Lugar de CX", fcx:"Fecha CX", producto:"Producto", proveedor:"Proveedor",
+  solicitante:"Solicitante", fpedido:"Fecha de pedido", fnecesidad:"Fecha de necesidad", hnecesidad:"Hora de necesidad",
+  paciente:"Paciente", medico:"Médico",
+  lugar:"Lugar de CX", fcx:"Fecha CX", producto:"Producto", provsug:"Proveedores sugeridos", proveedor:"Proveedor",
   fretiro:"Fecha de retiro", costo:"Costo sin IVA", oc:"OC", estado:"Estado"
 };
 
@@ -1151,7 +1217,7 @@ const Ped = {
   },
   _aplicarFiltros(){
     const term=Ped._searchTerm||"", estado=Ped._filtroEstado||"";
-    const campos=[".sol-sel",".ped-fpedido",".ped-paciente",".ped-medico",".ped-lugar",".ped-fcx",".ped-producto",".prov-sel",".ped-fretiro",".ped-oc"];
+    const campos=[".sol-sel",".ped-fpedido",".ped-fnecesidad",".ped-paciente",".ped-medico",".ped-lugar",".ped-fcx",".ped-producto",".ped-provsug",".prov-sel",".ped-fretiro",".ped-oc"];
     document.querySelectorAll("#ped-tbody tr").forEach(tr=>{
       let visible=true;
       if(term){
@@ -1167,7 +1233,7 @@ const Ped = {
   },
   _buildTr(d){
     d=d||{};
-    const fpedido=normFecha(d.fpedido), fcx=normFecha(d.fcx), fretiro=normFecha(d.fretiro);
+    const fpedido=normFecha(d.fpedido), fnecesidad=normFecha(d.fnecesidad), fcx=normFecha(d.fcx), fretiro=normFecha(d.fretiro);
     const tr=document.createElement("tr");
     tr.dataset.pedId = d.pedId || genId();
     if(d.anulado && d.anulado.si) tr.classList.add("row-anulado");
@@ -1179,6 +1245,18 @@ const Ped = {
           value="${esc(fpedido)}" oninput="mkDirty('ped-st');maskFecha(this)" onclick="abrirPickerFecha(this)">
         <input class="date-picker-hidden" type="date" tabindex="-1" onchange="pickFecha(this,()=>mkDirty('ped-st'))">
       </div></td>
+      <td data-label="Fecha necesidad"><div class="dt-cell">
+        <div class="date-wrap">
+          <input class="ti ped-fnecesidad" type="text" inputmode="numeric" maxlength="8" placeholder="dd/mm/aa"
+            value="${esc(fnecesidad)}" oninput="mkDirty('ped-st');maskFecha(this)" onclick="abrirPickerFecha(this)">
+          <input class="date-picker-hidden" type="date" tabindex="-1" onchange="pickFecha(this,()=>mkDirty('ped-st'))">
+        </div>
+        <div class="date-wrap">
+          <input class="ti hora-in ped-hnecesidad" type="text" inputmode="numeric" maxlength="5" placeholder="hh:mm"
+            value="${esc(d.hnecesidad||"")}" oninput="mkDirty('ped-st');maskHora(this)" onclick="abrirPickerHora(this)">
+          <input class="date-picker-hidden" type="time" tabindex="-1" onchange="pickHora(this,()=>mkDirty('ped-st'))">
+        </div>
+      </div></td>
       <td data-label="Paciente" style="width:1%"><textarea class="ta cta ped-paciente" rows="1" oninput="mkDirty('ped-st');upperKeepCursor(this);autoGrow(this)">${esc((d.paciente||"").toUpperCase())}</textarea></td>
       <td data-label="Médico" style="width:1%"><textarea class="ta cta ped-medico" rows="1" oninput="mkDirty('ped-st');upperKeepCursor(this);autoGrow(this)">${esc((d.medico||"").toUpperCase())}</textarea></td>
       <td data-label="Lugar de CX" style="width:1%"><textarea class="ta cta ped-lugar" rows="1" oninput="mkDirty('ped-st');upperKeepCursor(this);autoGrow(this)">${esc((d.lugar||"").toUpperCase())}</textarea></td>
@@ -1188,6 +1266,7 @@ const Ped = {
         <input class="date-picker-hidden" type="date" tabindex="-1" onchange="pickFecha(this,()=>mkDirty('ped-st'));Ped.sortRows()">
       </div></td>
       <td data-label="Producto" style="width:1%"><textarea class="ta cta ped-producto" rows="1" oninput="mkDirty('ped-st');upperKeepCursor(this);autoGrow(this)">${esc((d.producto||"").toUpperCase())}</textarea></td>
+      <td data-label="Proveedores sugeridos" style="width:1%"><textarea class="ta cta ped-provsug" rows="1" oninput="mkDirty('ped-st');autoGrow(this)">${esc(d.provsug||"")}</textarea></td>
       <td data-label="Proveedor">${Ped.proveedorSelect(d.proveedor||"")}</td>
       <td data-label="Fecha retiro"><div class="date-wrap">
         <input class="ti ped-fretiro" type="text" inputmode="numeric" maxlength="8" placeholder="dd/mm/aa"
@@ -1265,11 +1344,14 @@ const Ped = {
     return {
       solicitante: tr.querySelector(".sol-sel")?.value||"",
       fpedido:  g(".ped-fpedido"),
+      fnecesidad: g(".ped-fnecesidad"),
+      hnecesidad: g(".ped-hnecesidad"),
       paciente: g(".ped-paciente"),
       medico:   g(".ped-medico"),
       lugar:    g(".ped-lugar"),
       fcx:      g(".ped-fcx"),
       producto: g(".ped-producto"),
+      provsug:  g(".ped-provsug"),
       proveedor: tr.querySelector(".prov-sel")?.value||"",
       fretiro:  g(".ped-fretiro"),
       costo:    g(".ped-costo"),
@@ -1374,11 +1456,14 @@ const Ped = {
         pedId: tr.dataset.pedId || "",
         solicitante: tr.querySelector(".sol-sel")?.value || "",
         fpedido:  g(".ped-fpedido"),
+        fnecesidad: g(".ped-fnecesidad"),
+        hnecesidad: g(".ped-hnecesidad"),
         paciente: g(".ped-paciente"),
         medico:   g(".ped-medico"),
         lugar:    g(".ped-lugar"),
         fcx:      g(".ped-fcx"),
         producto: g(".ped-producto"),
+        provsug:  g(".ped-provsug"),
         proveedor: tr.querySelector(".prov-sel")?.value || "",
         fretiro:  g(".ped-fretiro"),
         costo:    moneyDigits(g(".ped-costo")),
@@ -1612,11 +1697,12 @@ const Coti = {
     return (v && v>0) ? v : null;
   },
   onUsdInput(el){
+    maskUsd(el);
     mkDirty("coti-st");
     const row = el.closest(".coti-prov-row");
     const arsEl = row.querySelector(".coti-prov-ars");
     const rate = Coti.getDolarRate();
-    const usd = parseFloat(el.value)||0;
+    const usd = parseFloat(usdDigits(el.value))||0;
     if(!usd){ arsEl.value=""; return; }
     if(rate) arsEl.value = "$ " + Math.round(usd*rate).toLocaleString("es-AR");
   },
@@ -1628,7 +1714,7 @@ const Coti = {
     const rate = Coti.getDolarRate();
     const ars = parseFloat(moneyDigits(el.value))||0;
     if(!ars){ usdEl.value=""; return; }
-    if(rate) usdEl.value = (ars/rate).toFixed(2);
+    if(rate) usdEl.value = formatUsdDisplay(ars/rate);
   },
   onRateEdit(inp){
     inp.dataset.userEdited = "1";
@@ -1647,7 +1733,7 @@ const Coti = {
         <div class="coti-prov-field">
           <span class="coti-lbl">Valor Unid. + IVA</span>
           <div class="coti-money-pair">
-            <div class="coti-money-sub"><span class="coti-money-tag">USD</span><input type="number" step="0.01" min="0" class="ti coti-prov-usd" value="${p.valorUsd||''}" oninput="Coti.onUsdInput(this)"></div>
+            <div class="coti-money-sub"><span class="coti-money-tag">USD</span><input type="text" inputmode="decimal" class="ti money-in coti-prov-usd" value="${p.valorUsd?formatUsdDisplay(p.valorUsd):''}" oninput="Coti.onUsdInput(this)"></div>
             <div class="coti-money-sub"><span class="coti-money-tag">ARS</span><input type="text" class="ti money-in coti-prov-ars" inputmode="numeric" value="${p.valorArs?('$ '+Number(p.valorArs).toLocaleString('es-AR')):''}" oninput="Coti.onArsInput(this)"></div>
           </div>
         </div>
@@ -1655,15 +1741,70 @@ const Coti = {
           <span class="coti-lbl">Estado</span>
           ${Coti.estSelect(p.estado||"sinestado")}
         </div>
+        <div class="coti-prov-field f-archivos">
+          <span class="coti-lbl">Adjuntos</span>
+          <div class="coti-archivo-row">
+            <button class="btn btn-light btn-sm btn-icon no-print" onclick="this.nextElementSibling.click()" title="Adjuntar imagen o PDF" aria-label="Adjuntar archivo">${CAMERA_ICON}</button>
+            <input type="file" accept="image/*,application/pdf" multiple class="archivo-input no-print" style="display:none" onchange="Coti.onArchivoSelect(this)">
+            <div class="coti-archivo-thumbs">${Coti.renderArchivosHtml(p.archivos||[])}</div>
+          </div>
+        </div>
       </div>`;
+  },
+  renderArchivosHtml(archivos){
+    return (archivos||[]).map(f=>{
+      if(f.type==="pdf"){
+        return `<div class="coti-archivo-thumb" data-type="pdf">
+          <a href="${f.data}" target="_blank" class="archivo-pdf-badge" data-name="${esc(f.name||"")}" title="${esc(f.name||"PDF")}">PDF</a>
+          <button class="foto-del" onclick="Coti.eliminarArchivo(this)" title="Quitar archivo">×</button>
+        </div>`;
+      }
+      return `<div class="coti-archivo-thumb" data-type="image">
+        <img src="${f.data}" class="foto-thumb" data-name="${esc(f.name||"")}" onclick="Coti.verFoto(this)">
+        <button class="foto-del" onclick="Coti.eliminarArchivo(this)" title="Quitar archivo">×</button>
+      </div>`;
+    }).join("");
+  },
+  collectArchivos(row){
+    return [...row.querySelectorAll(".coti-archivo-thumb")].map(div=>{
+      if(div.dataset.type==="pdf"){
+        const a=div.querySelector("a");
+        return {type:"pdf", name:a?.dataset.name||"", data:a?.href||""};
+      }
+      const img=div.querySelector("img");
+      return {type:"image", name:img?.dataset.name||"", data:img?.src||""};
+    });
+  },
+  onArchivoSelect(input){
+    const row = input.closest(".coti-prov-row");
+    const thumbsWrap = row.querySelector(".coti-archivo-thumbs");
+    const files = [...input.files];
+    input.value = "";
+    if(!files.length) return;
+    Promise.all(files.map(f=>fileToAttachment(f))).then(results=>{
+      thumbsWrap.insertAdjacentHTML("beforeend", Coti.renderArchivosHtml(results));
+      mkDirty("coti-st");
+      scheduleSaveCoti();
+    }).catch(()=>alert("No se pudo procesar alguno de los archivos seleccionados."));
+  },
+  verFoto(imgEl){
+    document.getElementById("fotoOverlayImg").src = imgEl.src;
+    document.getElementById("fotoOverlay").classList.add("open");
+  },
+  eliminarArchivo(btn){
+    if(!confirm("¿Quitar este archivo?")) return;
+    btn.closest(".coti-archivo-thumb").remove();
+    mkDirty("coti-st");
+    scheduleSaveCoti();
   },
   collectProvRows(wrap){
     return [...wrap.querySelectorAll(".coti-prov-row")].map(row=>({
       proveedor: row.querySelector(".coti-prov-sel")?.value||"",
       proveedorOtro: row.querySelector(".coti-prov-otro")?.value||"",
-      valorUsd: row.querySelector(".coti-prov-usd")?.value||"",
+      valorUsd: usdDigits(row.querySelector(".coti-prov-usd")?.value||""),
       valorArs: moneyDigits(row.querySelector(".coti-prov-ars")?.value||""),
-      estado: row.querySelector(".coti-estado")?.value||"sinestado"
+      estado: row.querySelector(".coti-estado")?.value||"sinestado",
+      archivos: Coti.collectArchivos(row)
     }));
   },
   regenProvRows(card, n){
