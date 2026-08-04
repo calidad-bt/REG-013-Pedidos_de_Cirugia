@@ -216,7 +216,7 @@ select option{background-color:#fff!important;background-image:none!important;co
 .coti-archivo-row{display:flex;align-items:flex-start;gap:6px;}
 .coti-archivo-thumbs{display:flex;flex-wrap:wrap;gap:5px;}
 .coti-archivo-thumb{position:relative;width:34px;height:34px;flex:0 0 auto;}
-.archivo-pdf-badge{width:34px;height:34px;display:flex;align-items:center;justify-content:center;border:1px solid var(--border);border-radius:3px;background:var(--accent-l);color:var(--accent-d);font-family:var(--mono);font-size:9px;font-weight:700;text-decoration:none;}
+.archivo-pdf-badge{width:34px;height:34px;display:flex;align-items:center;justify-content:center;border:1px solid var(--border);border-radius:3px;background:var(--accent-l);color:var(--accent-d);font-family:var(--mono);font-size:9px;font-weight:700;text-decoration:none;cursor:pointer;padding:0;}
 .hist-entry{border-bottom:1px solid var(--border);padding:8px 0;}
 .hist-entry:last-child{border-bottom:none;}
 .hist-meta{font-size:10px;color:var(--text-3);margin-bottom:4px;font-family:var(--mono);}
@@ -256,8 +256,7 @@ select option{background-color:#fff!important;background-image:none!important;co
 .login-btn{width:100%;height:38px;margin-top:6px;font-family:var(--font);font-size:13px;font-weight:700;background:var(--accent);color:white;border:none;border-radius:var(--radius);cursor:pointer;}
 .login-btn:hover{filter:brightness(.92);}
 .login-error{font-size:11px;color:var(--err-text);margin-top:8px;text-align:center;min-height:16px;}
-.login-skip{font-size:11px;color:var(--text-3);text-align:center;margin-top:14px;cursor:pointer;text-decoration:underline;}
-.login-skip:hover{color:var(--text-2);}
+
 #session-bar{position:fixed;top:calc(var(--nav-h) + 6px);right:20px;z-index:201;min-height:26px;display:flex;align-items:center;gap:10px;padding:4px 10px;pointer-events:none;background:var(--accent-d);border:1px solid rgba(255,255,255,.25);border-radius:4px;box-shadow:0 2px 8px rgba(0,0,0,.12);}
 .session-user{font-size:11px;font-family:var(--mono);color:rgba(255,255,255,.85);pointer-events:auto;}
 .session-out{font-size:11px;color:rgba(255,255,255,.75);cursor:pointer;text-decoration:underline;pointer-events:auto;}
@@ -626,7 +625,6 @@ select option{background-color:#fff!important;background-image:none!important;co
     </div>
     <button class="login-btn" onclick="doLogin()">Ingresar</button>
     <div class="login-error" id="login-error"></div>
-    <div class="login-skip" onclick="doSkip()">Solo visualización</div>
   </div>
 </div>
 
@@ -691,13 +689,13 @@ function tienePermiso(seccion){
 const SESSION_TIMEOUT_MS = 8*60*60*1000;
 let _sessionTimer = null;
 function resetSessionTimer(){
-  if(!sesionActual || sesionActual.id==="viewer") return;
+  if(!sesionActual) return;
   clearTimeout(_sessionTimer);
   try{ sessionStorage.setItem("pedcx_last_active", Date.now().toString()); }catch(e){}
   _sessionTimer = setTimeout(()=>{ doLogout(); }, SESSION_TIMEOUT_MS);
 }
 function checkSessionTimeout(){
-  if(!sesionActual || sesionActual.id==="viewer") return;
+  if(!sesionActual) return;
   try{
     const last = parseInt(sessionStorage.getItem("pedcx_last_active")||"0");
     if(last && (Date.now()-last) > SESSION_TIMEOUT_MS){ doLogout(); return; }
@@ -705,7 +703,7 @@ function checkSessionTimeout(){
   resetSessionTimer();
 }
 ["click","keydown","mousemove","touchstart"].forEach(evt=>{
-  document.addEventListener(evt, ()=>{ if(sesionActual && sesionActual.id!=="viewer") resetSessionTimer(); }, {passive:true});
+  document.addEventListener(evt, ()=>{ if(sesionActual) resetSessionTimer(); }, {passive:true});
 });
 
 // Cerrar sesión al refrescar o cerrar la pestaña
@@ -747,13 +745,6 @@ async function doLogin(){
   aplicarPermisos();
 }
 
-function doSkip(){
-  sesionActual = { id:"viewer", usuario:"", permisos:[] };
-  sessionStorage.setItem("pedcx_session", JSON.stringify(sesionActual));
-  ocultarLoginMostrarApp();
-  aplicarPermisos();
-}
-
 function doLogout(){
   clearTimeout(_sessionTimer);
   sesionActual = null;
@@ -774,7 +765,7 @@ function ocultarLoginMostrarApp(){
   if(sb){
     sb.style.display = "flex";
     const lbl = document.getElementById("session-user-label");
-    if(lbl) lbl.textContent = sesionActual.id==="viewer" ? "Solo visualización" : (sesionActual.usuario||"");
+    if(lbl) lbl.textContent = sesionActual.usuario||"";
   }
   if(tienePermiso("administracion")) renderTablaUsuarios();
 }
@@ -971,6 +962,17 @@ function fileToAttachment(file){
     }
   });
 }
+function base64ToBlob(dataUrl){
+  const comma = dataUrl.indexOf(",");
+  const header = dataUrl.slice(0, comma);
+  const base64 = dataUrl.slice(comma+1);
+  const mimeMatch = header.match(/data:(.*?);base64/);
+  const mime = mimeMatch ? mimeMatch[1] : "application/pdf";
+  const binary = atob(base64);
+  const bytes = new Uint8Array(binary.length);
+  for(let i=0;i<binary.length;i++) bytes[i]=binary.charCodeAt(i);
+  return new Blob([bytes], {type: mime});
+}
 document.addEventListener("input", e=>{ if(e.target.classList.contains("ta")) autoGrow(e.target); });
 
 // Recalcular alturas cuando termina de cargar la tipografía (las medidas cambian levemente con la fuente real)
@@ -1101,7 +1103,6 @@ const CAMERA_ICON = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none"
 const HISTORY_ICON = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v5h5"></path><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"></path><path d="M12 7v5l4 2"></path></svg>`;
 
 const PROV_DEFAULT = [
- ["Axmec","ventasbsas.axm@gmail.com","daniela","osteosintesis"],
  ["Bioprotece","ventas@bioprotece.com","","varios"],
  ["Biox","administracion@biox-sa.com","","columna+cmf"],
  ["Biovand","ventas@biovandgroup.com.ar","","osteosintesis+descartables"],
@@ -1755,7 +1756,7 @@ const Coti = {
     return (archivos||[]).map(f=>{
       if(f.type==="pdf"){
         return `<div class="coti-archivo-thumb" data-type="pdf">
-          <a href="${f.data}" target="_blank" class="archivo-pdf-badge" data-name="${esc(f.name||"")}" title="${esc(f.name||"PDF")}">PDF</a>
+          <button type="button" class="archivo-pdf-badge" onclick="Coti.abrirPdf(this)" data-pdf="${f.data}" data-name="${esc(f.name||"")}" title="${esc(f.name||"PDF")}">PDF</button>
           <button class="foto-del" onclick="Coti.eliminarArchivo(this)" title="Quitar archivo">×</button>
         </div>`;
       }
@@ -1765,11 +1766,23 @@ const Coti = {
       </div>`;
     }).join("");
   },
+  abrirPdf(btn){
+    const dataUrl = btn.dataset.pdf || "";
+    if(!dataUrl) return;
+    try{
+      const blob = base64ToBlob(dataUrl);
+      const url = URL.createObjectURL(blob);
+      window.open(url, "_blank");
+      setTimeout(()=>URL.revokeObjectURL(url), 60000);
+    }catch(e){
+      window.open(dataUrl, "_blank");
+    }
+  },
   collectArchivos(row){
     return [...row.querySelectorAll(".coti-archivo-thumb")].map(div=>{
       if(div.dataset.type==="pdf"){
-        const a=div.querySelector("a");
-        return {type:"pdf", name:a?.dataset.name||"", data:a?.href||""};
+        const b=div.querySelector(".archivo-pdf-badge");
+        return {type:"pdf", name:b?.dataset.name||"", data:b?.dataset.pdf||""};
       }
       const img=div.querySelector("img");
       return {type:"image", name:img?.dataset.name||"", data:img?.src||""};
