@@ -1070,8 +1070,17 @@ function usdDigits(v){
   return n;
 }
 function formatUsdDisplay(v){
-  const n = parseFloat(usdDigits(v))||0;
+  // v ya viene en formato numérico plano (guardado o calculado), NO en formato de
+  // pantalla con puntos de miles. NO debe pasar por usdDigits() de nuevo: eso borraba
+  // el punto decimal y multiplicaba el valor x100 en cada re-render/guardado.
+  let n = parseFloat(v)||0;
   if(!n) return "";
+  if(Math.abs(n) > 1000000){
+    // Valor corrupto por el bug histórico (inflado x100 repetidas veces). Se limpia
+    // en vez de mostrar un número sin sentido: hay que reingresar el precio a mano.
+    console.warn("valorUsd fuera de rango, se descarta:", v);
+    return "";
+  }
   return n.toLocaleString("es-AR",{minimumFractionDigits:2,maximumFractionDigits:2});
 }
 function maskOC(el){ el.value = el.value.replace(/\D/g,""); }
