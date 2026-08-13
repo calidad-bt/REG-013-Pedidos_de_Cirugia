@@ -1856,7 +1856,7 @@ const Coti = {
         <div class="coti-field"><span class="coti-lbl">Paciente</span>${Coti.pacienteOptions(d.paciente||"")}</div>
         <div class="coti-field"><span class="coti-lbl">Producto</span>${Coti.productoOptions(d.producto||"")}</div>
         <div class="coti-field f-sm"><span class="coti-lbl">Cantidad</span><input class="ti coti-cantidad" type="text" inputmode="numeric" value="${esc(d.cantidad||"")}" oninput="mkDirty('coti-st');maskOC(this)"></div>
-        <div class="coti-field f-md"><span class="coti-lbl">Cant. proveedores a cotizar</span><input class="ti coti-provnum" type="text" inputmode="numeric" value="${esc(provNum)}" oninput="Coti.onProvNumChange(this)"></div>
+        <div class="coti-field f-md"><span class="coti-lbl">Cant. proveedores a cotizar</span><input class="ti coti-provnum" type="text" inputmode="numeric" value="${esc(provNum)}" oninput="maskOC(this);mkDirty('coti-st')" onchange="Coti.onProvNumChange(this)" onkeydown="if(event.key==='Enter')this.blur()"></div>
         <div class="coti-del-wrap no-print"><button class="del-btn" onclick="Coti.eliminarCard(this)" title="Eliminar cotización">×</button></div>
       </div>
       <div class="coti-provs-head"><span>Proveedores a cotizar</span></div>
