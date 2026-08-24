@@ -1026,10 +1026,7 @@ function abrirPickerFecha(inp){
 }
 function pickFecha(picker, cb){
   const inp=picker.previousElementSibling;
-  if(inp){
-    inp.value = picker.value ? toDisplay(picker.value) : "";
-    if(cb) cb(inp);
-  }
+  if(inp && picker.value){ inp.value=toDisplay(picker.value); if(cb) cb(inp); }
   picker.style.pointerEvents="none"; picker.style.zIndex="";
 }
 function abrirPickerHora(inp){
@@ -1410,15 +1407,15 @@ const Ped = {
       ["Producto", g(".ped-producto")],
       ["Nombre del paciente", g(".ped-paciente")],
       ["Nombre del médico", g(".ped-medico")],
-      ["Lugar de CX", g(".ped-lugar")]
+      ["Lugar de CX", g(".ped-lugar")],
+      ["Fecha de CX", g(".ped-fcx")]
     ];
     const faltantes = campos.filter(([,v])=>!v.trim()).map(([label])=>label);
     if(faltantes.length){
       alert("Faltan completar los siguientes datos antes de copiar:\n\n— " + faltantes.join("\n— "));
       return;
     }
-    const fcx = g(".ped-fcx").trim() || "SIN FECHA";
-    const texto = `Material: ${g(".ped-producto")}\nNombre paciente: ${g(".ped-paciente")}\nNombre medico: ${g(".ped-medico")}\nLugar de CX: ${g(".ped-lugar")}\nFecha CX: ${fcx}`;
+    const texto = `Material: ${g(".ped-producto")}\nNombre paciente: ${g(".ped-paciente")}\nNombre medico: ${g(".ped-medico")}\nLugar de CX: ${g(".ped-lugar")}\nFecha CX: ${g(".ped-fcx")}`;
     const done=()=>{ const old=btn.innerHTML; btn.innerHTML=CHECK_ICON; btn.classList.add("copy-flash"); setTimeout(()=>{ btn.innerHTML=old; btn.classList.remove("copy-flash"); },1400); };
     if(navigator.clipboard && navigator.clipboard.writeText){
       navigator.clipboard.writeText(texto).then(done).catch(()=>fallbackCopy(texto,done));
@@ -2065,7 +2062,7 @@ setInterval(async ()=>{
   } catch(e){
     setSyncStatus("Sin conexión","sync-error");
   }
-}, 10000);
+}, 30000);
 
 /* ══════════════════════ NAV SCROLLSPY ══════════════════════ */
 function goSection(el, id){
