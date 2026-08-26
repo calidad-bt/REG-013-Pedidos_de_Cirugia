@@ -638,6 +638,11 @@ const LS_PED   = "pedcx_ped_v1";
 const LS_PROV  = "pedcx_prov_v1";
 const LS_COTI  = "pedcx_coti_v1";
 const FB_USERS = "/pedcx/usuarios";
+const FB_SOLIC = "/pedcx/solicitantes";
+const FB_ESTX  = "/pedcx/estados_extra";
+const LS_SOLIC = "pedcx_solic_v1";
+const LS_ESTX  = "pedcx_estados_v1";
+let lastSolicTs = 0, lastEstxTs = 0;
 
 async function fbGet(path){
   const r = await fetch(FB_URL + path + ".json");
@@ -654,6 +659,18 @@ async function fbSet(path, data){
 }
 function lsGet(k){ try{ return JSON.parse(localStorage.getItem(k)||"null"); }catch(e){ return null; } }
 function lsSet(k,v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
+async function guardarSolicitantes(){
+  lastSolicTs = Date.now();
+  const payload = {list:SOLICITANTES, ts:lastSolicTs};
+  lsSet(LS_SOLIC, payload);
+  try{ await fbSet(FB_SOLIC, payload); }catch(e){}
+}
+async function guardarEstadosExtra(){
+  lastEstxTs = Date.now();
+  const payload = {list:ESTADOS_EXTRA, ts:lastEstxTs};
+  lsSet(LS_ESTX, payload);
+  try{ await fbSet(FB_ESTX, payload); }catch(e){}
+}
 
 /* ══════════════════════ USUARIOS / SESIÓN / PERMISOS ══════════════════════
    permisos posibles: "pedidos" | "compras" | "proveedores" | "administracion"
@@ -1090,8 +1107,10 @@ function maskOC(el){ el.value = el.value.replace(/\D/g,""); }
 function validEmailFmt(v){ return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v); }
 
 /* ══════════════════════ CONSTANTES ══════════════════════ */
-const SOLICITANTES = ["Candela","Diego Varela","Luis","Cinthia","Martin Michanie"];
-const PED_ESTADOS = [
+const SOLICITANTES_DEFAULT = ["Candela","Diego Varela","Luis","Cinthia","Martin Michanie"];
+let SOLICITANTES = SOLICITANTES_DEFAULT.slice();
+
+const PED_ESTADOS_BASE = [
   ["noiniciado", "NO INICIADO"],
   ["cotiz",      "BAJO COTIZACION"],
   ["proceso",    "EN PROCESO"],
@@ -1100,7 +1119,38 @@ const PED_ESTADOS = [
   ["pagado",     "PAGADO"],
   ["reclamo",    "RECLAMO"]
 ];
-const PED_ORDEN = { noiniciado:1, cotiz:2, proceso:3, pausado:4, pendpago:5, pagado:6, reclamo:7 };
+// Estados agregados por administración: {codigo,label,bg,text,bd}. Se persisten aparte
+// para no tocar la definición base (que tiene estilos CSS fijos con clases pe-*).
+let ESTADOS_EXTRA = [];
+let PED_ESTADOS = PED_ESTADOS_BASE.slice();
+function rebuildEstados(){ PED_ESTADOS = PED_ESTADOS_BASE.concat(ESTADOS_EXTRA.map(e=>[e.codigo, e.label])); }
+function estadoColorInfo(codigo){ return ESTADOS_EXTRA.find(e=>e.codigo===codigo) || null; }
+function aplicarColorEstado(sel, codigo){
+  [...sel.classList].filter(c=>c.indexOf("pe-")===0).forEach(c=>sel.classList.remove(c));
+  sel.style.removeProperty("background-color");
+  sel.style.removeProperty("color");
+  sel.style.removeProperty("border-color");
+  const arrow = sel.parentElement && sel.parentElement.querySelector(".sel-arrow");
+  const info = estadoColorInfo(codigo);
+  if(info){
+    sel.style.setProperty("background-color", info.bg, "important");
+    sel.style.setProperty("color", info.text, "important");
+    sel.style.setProperty("border-color", info.bd, "important");
+    if(arrow) arrow.style.setProperty("border-top-color", info.text, "important");
+  } else {
+    sel.classList.add("pe-"+codigo);
+    if(arrow) arrow.style.removeProperty("border-top-color");
+  }
+}
+const ESTADO_PALETTE = [
+  {bg:"#EDE7F6", text:"#4527A0", bd:"#C5B3E6"},
+  {bg:"#E0F7FA", text:"#00838F", bd:"#A6E6EC"},
+  {bg:"#FFF3E0", text:"#B45309", bd:"#F5CBA7"},
+  {bg:"#F1F8E9", text:"#33691E", bd:"#C5E1A5"},
+  {bg:"#FCE4EC", text:"#AD1457", bd:"#F48FB1"},
+  {bg:"#ECEFF1", text:"#37474F", bd:"#B0BEC5"}
+];
+function colorParaNuevoEstado(i){ return ESTADO_PALETTE[i % ESTADO_PALETTE.length]; }
 const PED_FIELD_LABELS = {
   solicitante:"Solicitante", fpedido:"Fecha de pedido", fnecesidad:"Fecha de necesidad", hnecesidad:"Hora de necesidad",
   paciente:"Paciente", medico:"Médico",
@@ -1168,7 +1218,44 @@ let anularTargetTr = null;
 const Ped = {
   solicitanteSelect(cur){
     const opts = SOLICITANTES.map(s=>`<option value="${esc(s)}"${s===cur?" selected":""}>${esc(s)}</option>`).join("");
-    return `<select class="ts sol-sel" onchange="mkDirty('ped-st')"><option value="">— solicitante —</option>${opts}</select>`;
+    return `<select class="ts sol-sel" onfocus="this.dataset.prev=this.value" onchange="Ped.onSolicitanteChange(this)"><option value="">— solicitante —</option>${opts}<option value="__add__">+ Agregar…</option></select>`;
+  },
+  onSolicitanteChange(sel){
+    if(sel.value === "__add__"){ Ped.agregarSolicitante(sel); return; }
+    sel.dataset.prev = sel.value;
+    mkDirty("ped-st");
+  },
+  agregarSolicitante(sel){
+    if(!tienePermiso("administracion")){
+      alert("Solo un usuario con permiso de administración puede agregar solicitantes nuevos.");
+      sel.value = sel.dataset.prev || "";
+      return;
+    }
+    const nombre = prompt("Nombre del nuevo solicitante:");
+    if(nombre===null){ sel.value = sel.dataset.prev || ""; return; }
+    const limpio = nombre.trim();
+    if(!limpio){ sel.value = sel.dataset.prev || ""; return; }
+    if(SOLICITANTES.some(s=>s.toLowerCase()===limpio.toLowerCase())){
+      alert("Ese solicitante ya existe.");
+      sel.value = sel.dataset.prev || "";
+      return;
+    }
+    SOLICITANTES.push(limpio);
+    SOLICITANTES.sort((a,b)=>a.localeCompare(b,"es"));
+    guardarSolicitantes();
+    Ped.refreshSolicitanteSelects();
+    sel.value = limpio;
+    sel.dataset.prev = limpio;
+    mkDirty("ped-st");
+  },
+  refreshSolicitanteSelects(){
+    document.querySelectorAll(".sol-sel").forEach(s=>{
+      let val = s.value;
+      if(val === "__add__") val = s.dataset.prev || "";
+      const opts = SOLICITANTES.map(o=>`<option value="${esc(o)}"${o===val?" selected":""}>${esc(o)}</option>`).join("");
+      s.innerHTML = `<option value="">— solicitante —</option>${opts}<option value="__add__">+ Agregar…</option>`;
+      s.value = val;
+    });
   },
   proveedorSelect(cur){
     const provs = [...document.querySelectorAll("#prov-tbody tr")].map(tr=>tr.querySelector(".prov-empresa")?.value||"").filter(Boolean);
@@ -1177,15 +1264,69 @@ const Ped = {
   },
   estSelect(cur){
     cur = cur || "noiniciado";
-    const opts = PED_ESTADOS.map(([v,label])=>`<option value="${v}"${v===cur?" selected":""}>${label}</option>`).join("");
-    return `<div class="sel-wrap"><select class="ts sel-estado pe-${cur}" onchange="Ped.onEstadoChange(this)">${opts}</select><span class="sel-arrow"></span></div>`;
+    const opts = PED_ESTADOS.map(([v,label])=>`<option value="${v}"${v===cur?" selected":""}>${label}</option>`).join("")
+      + `<option value="__add__">+ Agregar…</option>`;
+    const info = estadoColorInfo(cur);
+    const cls = info ? "" : " pe-"+cur;
+    const style = info ? ` style="background-color:${info.bg}!important;color:${info.text}!important;border-color:${info.bd}!important"` : "";
+    const arrowStyle = info ? ` style="border-top-color:${info.text}!important"` : "";
+    return `<div class="sel-wrap"><select class="ts sel-estado${cls}" onfocus="this.dataset.prev=this.value" onchange="Ped.onEstadoChange(this)"${style}>${opts}</select><span class="sel-arrow"${arrowStyle}></span></div>`;
   },
   onEstadoChange(sel){
-    PED_ESTADOS.forEach(([v])=> sel.classList.remove("pe-"+v));
-    sel.classList.add("pe-"+sel.value);
+    if(sel.value === "__add__"){ Ped.agregarEstado(sel); return; }
+    aplicarColorEstado(sel, sel.value);
+    sel.dataset.prev = sel.value;
     mkDirty("ped-st");
     Ped.sortRows();
     Ped._aplicarFiltros();
+  },
+  agregarEstado(sel){
+    if(!tienePermiso("administracion")){
+      alert("Solo un usuario con permiso de administración puede agregar estados nuevos.");
+      sel.value = sel.dataset.prev || "noiniciado";
+      return;
+    }
+    const nombre = prompt("Nombre del nuevo estado (ej: EN TRANSITO):");
+    if(nombre===null){ sel.value = sel.dataset.prev || "noiniciado"; return; }
+    const label = nombre.trim().toUpperCase();
+    if(!label){ sel.value = sel.dataset.prev || "noiniciado"; return; }
+    if(PED_ESTADOS.some(([,l])=>l===label)){
+      alert("Ya existe un estado con ese nombre.");
+      sel.value = sel.dataset.prev || "noiniciado";
+      return;
+    }
+    const codigo = "x"+Date.now().toString(36);
+    const color = colorParaNuevoEstado(ESTADOS_EXTRA.length);
+    ESTADOS_EXTRA.push({codigo, label, bg:color.bg, text:color.text, bd:color.bd});
+    rebuildEstados();
+    guardarEstadosExtra();
+    Ped.refreshEstadoSelects();
+    Ped.refreshEstadoFiltro();
+    sel.value = codigo;
+    sel.dataset.prev = codigo;
+    aplicarColorEstado(sel, codigo);
+    mkDirty("ped-st");
+    Ped.sortRows();
+    Ped._aplicarFiltros();
+  },
+  refreshEstadoSelects(){
+    document.querySelectorAll(".sel-estado").forEach(sel=>{
+      let val = sel.value;
+      if(val === "__add__") val = sel.dataset.prev || "noiniciado";
+      const opts = PED_ESTADOS.map(([v,label])=>`<option value="${v}"${v===val?" selected":""}>${label}</option>`).join("")
+        + `<option value="__add__">+ Agregar…</option>`;
+      sel.innerHTML = opts;
+      sel.value = val;
+      aplicarColorEstado(sel, val);
+    });
+  },
+  refreshEstadoFiltro(){
+    const sel = document.getElementById("ped-filtro-estado");
+    if(!sel) return;
+    const val = sel.value;
+    sel.innerHTML = `<option value="">Todos los estados</option>` +
+      PED_ESTADOS.map(([v,label])=>`<option value="${v}">${label}</option>`).join("");
+    sel.value = val;
   },
   sortRows(){
     // No se reordena por estado ni por fecha: se mantiene el orden de generación
@@ -1972,10 +2113,39 @@ document.addEventListener("change", e=>{
 async function loadAll(){
   setSyncStatus("Cargando…");
   try{
-    const [rPed, rProv, rCoti] = await Promise.all([fbGet(FB_PED), fbGet(FB_PROV), fbGet(FB_COTI)]);
+    const [rPed, rProv, rCoti, rSolic, rEstx] = await Promise.all([fbGet(FB_PED), fbGet(FB_PROV), fbGet(FB_COTI), fbGet(FB_SOLIC), fbGet(FB_ESTX)]);
     const lPed  = lsGet(LS_PED)  || {ts:0, rows:[]};
     const lProv = lsGet(LS_PROV) || {ts:0, rows:[]};
     const lCoti = lsGet(LS_COTI) || {ts:0, rows:[]};
+    const lSolic = lsGet(LS_SOLIC) || {ts:0, list:[]};
+    const lEstx  = lsGet(LS_ESTX)  || {ts:0, list:[]};
+
+    // Solicitantes (lista de admin, se necesita antes de renderizar Pedidos)
+    const remoteSolicTs = (rSolic && rSolic.ts) || 0;
+    if(remoteSolicTs >= (lSolic.ts||0) && rSolic && rSolic.list && rSolic.list.length){
+      SOLICITANTES = rSolic.list; lastSolicTs = remoteSolicTs; lsSet(LS_SOLIC, rSolic);
+    } else if(lSolic.list && lSolic.list.length){
+      SOLICITANTES = lSolic.list; lastSolicTs = lSolic.ts||Date.now();
+      fbSet(FB_SOLIC, {list:SOLICITANTES, ts:lastSolicTs}).catch(()=>{});
+    } else {
+      SOLICITANTES = SOLICITANTES_DEFAULT.slice();
+      lastSolicTs = Date.now();
+      fbSet(FB_SOLIC, {list:SOLICITANTES, ts:lastSolicTs}).catch(()=>{});
+      lsSet(LS_SOLIC, {list:SOLICITANTES, ts:lastSolicTs});
+    }
+
+    // Estados extra (agregados por admin, se necesita antes de renderizar Pedidos)
+    const remoteEstxTs = (rEstx && rEstx.ts) || 0;
+    if(remoteEstxTs >= (lEstx.ts||0) && rEstx && Array.isArray(rEstx.list)){
+      ESTADOS_EXTRA = rEstx.list; lastEstxTs = remoteEstxTs; lsSet(LS_ESTX, rEstx);
+    } else if(Array.isArray(lEstx.list) && lEstx.list.length){
+      ESTADOS_EXTRA = lEstx.list; lastEstxTs = lEstx.ts||Date.now();
+      fbSet(FB_ESTX, {list:ESTADOS_EXTRA, ts:lastEstxTs}).catch(()=>{});
+    } else {
+      ESTADOS_EXTRA = []; lastEstxTs = Date.now();
+    }
+    rebuildEstados();
+    Ped.refreshEstadoFiltro();
 
     // Proveedores (primero, para que los selects de proveedor de Pedidos ya tengan las opciones)
     let provFinal;
@@ -2028,6 +2198,12 @@ async function loadAll(){
     const lPed  = lsGet(LS_PED)  || {ts:0, rows:[]};
     const lProv = lsGet(LS_PROV) || {ts:0, rows:[]};
     const lCoti = lsGet(LS_COTI) || {ts:0, rows:[]};
+    const lSolic = lsGet(LS_SOLIC) || {ts:0, list:[]};
+    const lEstx  = lsGet(LS_ESTX)  || {ts:0, list:[]};
+    SOLICITANTES = (lSolic.list && lSolic.list.length) ? lSolic.list : SOLICITANTES_DEFAULT.slice();
+    ESTADOS_EXTRA = Array.isArray(lEstx.list) ? lEstx.list : [];
+    rebuildEstados();
+    Ped.refreshEstadoFiltro();
     Prov.restore((lProv.rows&&lProv.rows.length)?lProv.rows:PROV_DEFAULT);
     Ped.restore(lPed.rows||[]);
     Ped.refreshProveedorSelects();
@@ -2039,6 +2215,22 @@ async function loadAll(){
 
 setInterval(async ()=>{
   try{
+    const remoteSolic = await fbGet(FB_SOLIC);
+    if(remoteSolic && (remoteSolic.ts||0) > lastSolicTs && remoteSolic.list){
+      lastSolicTs = remoteSolic.ts;
+      lsSet(LS_SOLIC, remoteSolic);
+      SOLICITANTES = remoteSolic.list;
+      Ped.refreshSolicitanteSelects();
+    }
+    const remoteEstx = await fbGet(FB_ESTX);
+    if(remoteEstx && (remoteEstx.ts||0) > lastEstxTs && Array.isArray(remoteEstx.list)){
+      lastEstxTs = remoteEstx.ts;
+      lsSet(LS_ESTX, remoteEstx);
+      ESTADOS_EXTRA = remoteEstx.list;
+      rebuildEstados();
+      Ped.refreshEstadoSelects();
+      Ped.refreshEstadoFiltro();
+    }
     const remoteProv = await fbGet(FB_PROV);
     if(remoteProv && (remoteProv.ts||0) > lastProvTs){
       lastProvTs = remoteProv.ts;
