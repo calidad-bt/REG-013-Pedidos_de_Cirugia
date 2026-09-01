@@ -365,7 +365,7 @@ select option{background-color:#fff!important;background-image:none!important;co
         <div class="sec-title">Pedidos CX<span class="sync-inline" id="ped-st">—</span></div>
 
         <div class="search-row no-print">
-          <input type="text" class="search-input" id="ped-search" placeholder="Buscar por paciente, médico, producto, proveedor, solicitante, lugar..." oninput="Ped.filtrar(this.value)">
+          <input type="text" class="search-input" id="ped-search" placeholder="Buscar por paciente, médico, producto, proveedor, solicitante, vendedor, lugar..." oninput="Ped.filtrar(this.value)">
           <select class="filter-select" id="ped-filtro-estado" onchange="Ped.filtrarEstado(this.value)">
             <option value="">Todos los estados</option>
             <option value="noiniciado">NO INICIADO</option>
@@ -397,6 +397,7 @@ select option{background-color:#fff!important;background-image:none!important;co
             <colgroup>
               <col style="width:2%">  <!-- #             -->
               <col style="width:7%">  <!-- Solicitante   -->
+              <col style="width:7%">  <!-- Vendedor      -->
               <col style="width:6%">  <!-- Fecha pedido  -->
               <col style="width:6%">  <!-- Fecha necesidad -->
               <col style="width:7%">  <!-- Paciente      -->
@@ -416,6 +417,7 @@ select option{background-color:#fff!important;background-image:none!important;co
               <tr>
                 <th>#</th>
                 <th>Solicitante</th>
+                <th>Vendedor</th>
                 <th>Fecha pedido</th>
                 <th>Fecha necesidad</th>
                 <th>Paciente</th>
@@ -826,7 +828,7 @@ function aplicarPermisos(){
 
   // Pedidos CX: campos básicos vs. campos exclusivos de compras
   document.querySelectorAll("#ped-tbody tr").forEach(tr=>{
-    tr.querySelectorAll(".sol-sel, .ped-fpedido, .ped-fnecesidad, .ped-hnecesidad, .ped-paciente, .ped-medico, .ped-lugar, .ped-fcx, .ped-producto, .ped-provsug")
+    tr.querySelectorAll(".sol-sel, .vend-sel, .ped-fpedido, .ped-fnecesidad, .ped-hnecesidad, .ped-paciente, .ped-medico, .ped-lugar, .ped-fcx, .ped-producto, .ped-provsug")
       .forEach(el=> el.disabled = !puedeBasico);
     // Columna Proveedor: exclusiva del permiso "compras" (pedidos no la habilita)
     tr.querySelectorAll(".prov-sel")
@@ -847,6 +849,11 @@ function aplicarPermisos(){
   if(btnCoti) btnCoti.disabled = !puedeCompras;
   const rate = document.getElementById("coti-rate");
   if(rate) rate.disabled = !puedeCompras;
+  // Excepción: con permiso "pedidos" (sin "compras") se pueden ver/abrir los adjuntos
+  // ya cargados (fotos y PDFs), aunque no se puedan agregar, quitar ni editar datos.
+  if(!puedeCompras && puedeBasico){
+    document.querySelectorAll("#coti-list .archivo-pdf-badge").forEach(el=> el.disabled = false);
+  }
 
   // Proveedores CX: todo requiere "proveedores"
   document.querySelectorAll("#prov-tbody input, #prov-tbody select, #prov-tbody button")
@@ -1184,7 +1191,7 @@ const ESTADO_PALETTE = [
 function colorParaNuevoEstado(i){ return ESTADO_PALETTE[i % ESTADO_PALETTE.length]; }
 const PED_FIELD_LABELS = {
   solicitante:"Solicitante", fpedido:"Fecha de pedido", fnecesidad:"Fecha de necesidad", hnecesidad:"Hora de necesidad",
-  paciente:"Paciente", medico:"Médico",
+  vendedor:"Vendedor", paciente:"Paciente", medico:"Médico",
   lugar:"Lugar de CX", fcx:"Fecha CX", producto:"Producto", provsug:"Proveedores sugeridos", proveedor:"Proveedor",
   fretiro:"Fecha de retiro", costo:"Costo sin IVA", oc:"OC", estado:"Estado"
 };
@@ -1256,6 +1263,15 @@ const Ped = {
     sel.dataset.prev = sel.value;
     mkDirty("ped-st");
   },
+  vendedorSelect(cur){
+    const opts = SOLICITANTES.map(s=>`<option value="${esc(s)}"${s===cur?" selected":""}>${esc(s)}</option>`).join("");
+    return `<select class="ts vend-sel" onfocus="this.dataset.prev=this.value" onchange="Ped.onVendedorChange(this)"><option value="">— vendedor —</option>${opts}<option value="__add__">+ Agregar…</option></select>`;
+  },
+  onVendedorChange(sel){
+    if(sel.value === "__add__"){ Ped.agregarSolicitante(sel); return; }
+    sel.dataset.prev = sel.value;
+    mkDirty("ped-st");
+  },
   agregarSolicitante(sel){
     if(!tienePermiso("administracion")){
       alert("Solo un usuario con permiso de administración puede agregar solicitantes nuevos.");
@@ -1280,11 +1296,12 @@ const Ped = {
     mkDirty("ped-st");
   },
   refreshSolicitanteSelects(){
-    document.querySelectorAll(".sol-sel").forEach(s=>{
+    document.querySelectorAll(".sol-sel, .vend-sel").forEach(s=>{
       let val = s.value;
       if(val === "__add__") val = s.dataset.prev || "";
+      const placeholder = s.classList.contains("vend-sel") ? "— vendedor —" : "— solicitante —";
       const opts = SOLICITANTES.map(o=>`<option value="${esc(o)}"${o===val?" selected":""}>${esc(o)}</option>`).join("");
-      s.innerHTML = `<option value="">— solicitante —</option>${opts}<option value="__add__">+ Agregar…</option>`;
+      s.innerHTML = `<option value="">${placeholder}</option>${opts}<option value="__add__">+ Agregar…</option>`;
       s.value = val;
     });
   },
@@ -1402,7 +1419,7 @@ const Ped = {
   },
   _aplicarFiltros(){
     const term=Ped._searchTerm||"", estado=Ped._filtroEstado||"";
-    const campos=[".sol-sel",".ped-fpedido",".ped-fnecesidad",".ped-paciente",".ped-medico",".ped-lugar",".ped-fcx",".ped-producto",".ped-provsug",".prov-sel",".ped-fretiro",".ped-oc"];
+    const campos=[".sol-sel",".vend-sel",".ped-fpedido",".ped-fnecesidad",".ped-paciente",".ped-medico",".ped-lugar",".ped-fcx",".ped-producto",".ped-provsug",".prov-sel",".ped-fretiro",".ped-oc"];
     document.querySelectorAll("#ped-tbody tr").forEach(tr=>{
       let visible=true;
       if(term){
@@ -1425,6 +1442,7 @@ const Ped = {
     tr.innerHTML=`
       <td data-label="#"><span class="row-num"></span></td>
       <td data-label="Solicitante">${Ped.solicitanteSelect(d.solicitante||"")}</td>
+      <td data-label="Vendedor">${Ped.vendedorSelect(d.vendedor||"")}</td>
       <td data-label="Fecha pedido"><div class="date-wrap">
         <input class="ti ped-fpedido" type="text" inputmode="numeric" maxlength="8" placeholder="dd/mm/aa"
           value="${esc(fpedido)}" oninput="mkDirty('ped-st');maskFecha(this)" onclick="abrirPickerFecha(this)">
@@ -1528,6 +1546,7 @@ const Ped = {
     const estadoLabel = (PED_ESTADOS.find(e=>e[0]===estadoCode)||[null,estadoCode])[1];
     return {
       solicitante: tr.querySelector(".sol-sel")?.value||"",
+      vendedor: tr.querySelector(".vend-sel")?.value||"",
       fpedido:  g(".ped-fpedido"),
       fnecesidad: g(".ped-fnecesidad"),
       hnecesidad: g(".ped-hnecesidad"),
@@ -1640,6 +1659,7 @@ const Ped = {
       return {
         pedId: tr.dataset.pedId || "",
         solicitante: tr.querySelector(".sol-sel")?.value || "",
+        vendedor: tr.querySelector(".vend-sel")?.value || "",
         fpedido:  g(".ped-fpedido"),
         fnecesidad: g(".ped-fnecesidad"),
         hnecesidad: g(".ped-hnecesidad"),
