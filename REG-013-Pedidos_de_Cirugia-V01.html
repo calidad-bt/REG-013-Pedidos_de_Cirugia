@@ -8,6 +8,7 @@
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
 <style>
 :root {
   --accent:#0E6B8A; --accent-d:#094E66; --accent-l:#E4F2F7;
@@ -634,7 +635,6 @@ select option{background-color:#fff!important;background-image:none!important;co
 
 <script>
 /* ══════════════════════ FIREBASE / STORAGE ══════════════════════ */
-const FB_URL   = "https://sgc2-72ddb-default-rtdb.firebaseio.com";
 const FB_PED   = "/pedcx/pedidos";
 const FB_PROV  = "/pedcx/proveedores";
 const FB_COTI  = "/pedcx/cotizaciones";
@@ -650,13 +650,13 @@ let lastSolicTs = 0, lastEstxTs = 0;
 
 /* ── FIREBASE AUTH (anónimo) ─────────────────────────────── */
 const firebaseConfig = {
-  apiKey: "AIzaSyAIMGOPszFGS29hlLCdhD6woff-U6RrvNA",
-  authDomain: "sgc2-72ddb.firebaseapp.com",
-  databaseURL: "https://sgc2-72ddb-default-rtdb.firebaseio.com",
-  projectId: "sgc2-72ddb",
-  storageBucket: "sgc2-72ddb.firebasestorage.app",
-  messagingSenderId: "888988125222",
-  appId: "1:888988125222:web:8caf83fb73482e6c09bee7"
+  apiKey: "AIzaSyAziMrtR39_WesTuPmhN3aq78uLZNtNqNM",
+  authDomain: "sgc-b-a6181.firebaseapp.com",
+  databaseURL: "https://sgc-b-a6181-default-rtdb.firebaseio.com",
+  projectId: "sgc-b-a6181",
+  storageBucket: "sgc-b-a6181.firebasestorage.app",
+  messagingSenderId: "207590268424",
+  appId: "1:207590268424:web:29c8906dd641f84f65bbbd"
 };
 firebase.initializeApp(firebaseConfig);
 
@@ -675,20 +675,16 @@ async function getAuthToken(){
   return firebase.auth().currentUser.getIdToken();
 }
 
+let _db = null;
+function getDb(){ if(!_db) _db = firebase.database(); return _db; }
 async function fbGet(path){
-  const token = await getAuthToken();
-  const r = await fetch(FB_URL + path + ".json?auth=" + token);
-  if(!r.ok) throw new Error("fbGet " + r.status);
-  return r.json();
+  await ensureSignedIn();
+  const snap = await getDb().ref(path).once("value");
+  return snap.val();
 }
 async function fbSet(path, data){
-  const token = await getAuthToken();
-  const r = await fetch(FB_URL + path + ".json?auth=" + token, {
-    method:"PUT", headers:{"Content-Type":"application/json"},
-    body: JSON.stringify(data)
-  });
-  if(!r.ok) throw new Error("fbSet " + r.status);
-  return r.json();
+  await ensureSignedIn();
+  await getDb().ref(path).set(data);
 }
 function lsGet(k){ try{ return JSON.parse(localStorage.getItem(k)||"null"); }catch(e){ return null; } }
 function lsSet(k,v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
@@ -2161,154 +2157,184 @@ document.addEventListener("change", e=>{
   if(e.target.closest("#coti-list")) scheduleSaveCoti();
 });
 
-async function loadAll(){
-  setSyncStatus("Cargando…");
-  try{
-    const [rPed, rProv, rCoti, rSolic, rEstx] = await Promise.all([fbGet(FB_PED), fbGet(FB_PROV), fbGet(FB_COTI), fbGet(FB_SOLIC), fbGet(FB_ESTX)]);
-    const lPed  = lsGet(LS_PED)  || {ts:0, rows:[]};
-    const lProv = lsGet(LS_PROV) || {ts:0, rows:[]};
-    const lCoti = lsGet(LS_COTI) || {ts:0, rows:[]};
-    const lSolic = lsGet(LS_SOLIC) || {ts:0, list:[]};
-    const lEstx  = lsGet(LS_ESTX)  || {ts:0, list:[]};
+/* ── SYNC EN TIEMPO REAL ─────────────────────────────────────
+   Antes: carga inicial con 5 fetch en paralelo + polling cada 30s que
+   volvía a pedir los 5 nodos enteros. Ahora: un listener onValue por
+   nodo. El render inicial sigue haciéndose en el mismo orden de siempre
+   (Solicitantes/Estados extra → Proveedores → Pedidos → Cotizaciones,
+   porque cada uno depende de los selects que arma el anterior) — para
+   eso se espera a que los 5 nodos hayan informado al menos una vez antes
+   de armar la pantalla por primera vez. Las actualizaciones posteriores
+   (alguien más edita algo) sí se aplican nodo por nodo, igual que antes. */
+let _rSolic=null, _rEstx=null, _rProv=null, _rPed=null, _rCoti=null;
+let _gotSolic=false, _gotEstx=false, _gotProv=false, _gotPed=false, _gotCoti=false;
+let _anyError = false;
+let _cargaInicialHecha = false;
 
-    // Solicitantes (lista de admin, se necesita antes de renderizar Pedidos)
-    const remoteSolicTs = (rSolic && rSolic.ts) || 0;
-    if(remoteSolicTs >= (lSolic.ts||0) && rSolic && rSolic.list && rSolic.list.length){
-      SOLICITANTES = rSolic.list; lastSolicTs = remoteSolicTs; lsSet(LS_SOLIC, rSolic);
-    } else if(lSolic.list && lSolic.list.length){
-      SOLICITANTES = lSolic.list; lastSolicTs = lSolic.ts||Date.now();
-      fbSet(FB_SOLIC, {list:SOLICITANTES, ts:lastSolicTs}).catch(()=>{});
-    } else {
-      SOLICITANTES = SOLICITANTES_DEFAULT.slice();
-      lastSolicTs = Date.now();
-      fbSet(FB_SOLIC, {list:SOLICITANTES, ts:lastSolicTs}).catch(()=>{});
-      lsSet(LS_SOLIC, {list:SOLICITANTES, ts:lastSolicTs});
-    }
+function _todosInformaron(){ return _gotSolic && _gotEstx && _gotProv && _gotPed && _gotCoti; }
 
-    // Estados extra (agregados por admin, se necesita antes de renderizar Pedidos)
-    const remoteEstxTs = (rEstx && rEstx.ts) || 0;
-    if(remoteEstxTs >= (lEstx.ts||0) && rEstx && Array.isArray(rEstx.list)){
-      ESTADOS_EXTRA = rEstx.list; lastEstxTs = remoteEstxTs; lsSet(LS_ESTX, rEstx);
-    } else if(Array.isArray(lEstx.list) && lEstx.list.length){
-      ESTADOS_EXTRA = lEstx.list; lastEstxTs = lEstx.ts||Date.now();
-      fbSet(FB_ESTX, {list:ESTADOS_EXTRA, ts:lastEstxTs}).catch(()=>{});
-    } else {
-      ESTADOS_EXTRA = []; lastEstxTs = Date.now();
-    }
-    rebuildEstados();
-    Ped.refreshEstadoFiltro();
+function _renderInicial(){
+  const lPed  = lsGet(LS_PED)  || {ts:0, rows:[]};
+  const lProv = lsGet(LS_PROV) || {ts:0, rows:[]};
+  const lCoti = lsGet(LS_COTI) || {ts:0, rows:[]};
+  const lSolic = lsGet(LS_SOLIC) || {ts:0, list:[]};
+  const lEstx  = lsGet(LS_ESTX)  || {ts:0, list:[]};
+  const rPed = _rPed, rProv = _rProv, rCoti = _rCoti, rSolic = _rSolic, rEstx = _rEstx;
 
-    // Proveedores (primero, para que los selects de proveedor de Pedidos ya tengan las opciones)
-    let provFinal;
-    const remoteProvTs = (rProv && rProv.ts) || 0;
-    if(remoteProvTs >= (lProv.ts||0) && rProv && rProv.rows && rProv.rows.length){
-      provFinal = rProv.rows; lastProvTs = remoteProvTs; lsSet(LS_PROV, rProv);
-    } else if(lProv.rows && lProv.rows.length){
-      provFinal = lProv.rows; lastProvTs = lProv.ts||Date.now();
-      fbSet(FB_PROV, {rows:provFinal, ts:lastProvTs}).catch(()=>{});
-    } else {
-      provFinal = PROV_DEFAULT;
-      lastProvTs = Date.now();
-      fbSet(FB_PROV, {rows:provFinal, ts:lastProvTs}).catch(()=>{});
-      lsSet(LS_PROV, {rows:provFinal, ts:lastProvTs});
-    }
-    Prov.restore(provFinal);
-
-    // Pedidos
-    let pedFinal;
-    const remotePedTs = (rPed && rPed.ts) || 0;
-    if(remotePedTs >= (lPed.ts||0) && rPed && rPed.rows && rPed.rows.length){
-      pedFinal = rPed.rows; lastPedTs = remotePedTs; lsSet(LS_PED, rPed);
-    } else if(lPed.rows && lPed.rows.length){
-      pedFinal = lPed.rows; lastPedTs = lPed.ts||Date.now();
-      fbSet(FB_PED, {rows:pedFinal, ts:lastPedTs}).catch(()=>{});
-    } else {
-      pedFinal = [];
-      lastPedTs = Date.now();
-    }
-    Ped.restore(pedFinal);
-    Ped.refreshProveedorSelects();
-
-    // Cotizaciones (al final, ya que sus selects dependen de Pedidos y Proveedores)
-    let cotiFinal;
-    const remoteCotiTs = (rCoti && rCoti.ts) || 0;
-    if(remoteCotiTs >= (lCoti.ts||0) && rCoti && rCoti.rows && rCoti.rows.length){
-      cotiFinal = rCoti.rows; lastCotiTs = remoteCotiTs; lsSet(LS_COTI, rCoti);
-    } else if(lCoti.rows && lCoti.rows.length){
-      cotiFinal = lCoti.rows; lastCotiTs = lCoti.ts||Date.now();
-      fbSet(FB_COTI, {rows:cotiFinal, ts:lastCotiTs}).catch(()=>{});
-    } else {
-      cotiFinal = [];
-      lastCotiTs = Date.now();
-    }
-    Coti.restore(cotiFinal);
-    aplicarPermisos();
-
-    setSyncStatus("En vivo","sync-ok");
-  } catch(e){
-    const lPed  = lsGet(LS_PED)  || {ts:0, rows:[]};
-    const lProv = lsGet(LS_PROV) || {ts:0, rows:[]};
-    const lCoti = lsGet(LS_COTI) || {ts:0, rows:[]};
-    const lSolic = lsGet(LS_SOLIC) || {ts:0, list:[]};
-    const lEstx  = lsGet(LS_ESTX)  || {ts:0, list:[]};
-    SOLICITANTES = (lSolic.list && lSolic.list.length) ? lSolic.list : SOLICITANTES_DEFAULT.slice();
-    ESTADOS_EXTRA = Array.isArray(lEstx.list) ? lEstx.list : [];
-    rebuildEstados();
-    Ped.refreshEstadoFiltro();
-    Prov.restore((lProv.rows&&lProv.rows.length)?lProv.rows:PROV_DEFAULT);
-    Ped.restore(lPed.rows||[]);
-    Ped.refreshProveedorSelects();
-    Coti.restore(lCoti.rows||[]);
-    aplicarPermisos();
-    setSyncStatus("Sin conexión","sync-error");
+  // Solicitantes (lista de admin, se necesita antes de renderizar Pedidos)
+  const remoteSolicTs = (rSolic && rSolic.ts) || 0;
+  if(remoteSolicTs >= (lSolic.ts||0) && rSolic && rSolic.list && rSolic.list.length){
+    SOLICITANTES = rSolic.list; lastSolicTs = remoteSolicTs; lsSet(LS_SOLIC, rSolic);
+  } else if(lSolic.list && lSolic.list.length){
+    SOLICITANTES = lSolic.list; lastSolicTs = lSolic.ts||Date.now();
+    fbSet(FB_SOLIC, {list:SOLICITANTES, ts:lastSolicTs}).catch(()=>{});
+  } else {
+    SOLICITANTES = SOLICITANTES_DEFAULT.slice();
+    lastSolicTs = Date.now();
+    fbSet(FB_SOLIC, {list:SOLICITANTES, ts:lastSolicTs}).catch(()=>{});
+    lsSet(LS_SOLIC, {list:SOLICITANTES, ts:lastSolicTs});
   }
+
+  // Estados extra (agregados por admin, se necesita antes de renderizar Pedidos)
+  const remoteEstxTs = (rEstx && rEstx.ts) || 0;
+  if(remoteEstxTs >= (lEstx.ts||0) && rEstx && Array.isArray(rEstx.list)){
+    ESTADOS_EXTRA = rEstx.list; lastEstxTs = remoteEstxTs; lsSet(LS_ESTX, rEstx);
+  } else if(Array.isArray(lEstx.list) && lEstx.list.length){
+    ESTADOS_EXTRA = lEstx.list; lastEstxTs = lEstx.ts||Date.now();
+    fbSet(FB_ESTX, {list:ESTADOS_EXTRA, ts:lastEstxTs}).catch(()=>{});
+  } else {
+    ESTADOS_EXTRA = []; lastEstxTs = Date.now();
+  }
+  rebuildEstados();
+  Ped.refreshEstadoFiltro();
+
+  // Proveedores (primero, para que los selects de proveedor de Pedidos ya tengan las opciones)
+  let provFinal;
+  const remoteProvTs = (rProv && rProv.ts) || 0;
+  if(remoteProvTs >= (lProv.ts||0) && rProv && rProv.rows && rProv.rows.length){
+    provFinal = rProv.rows; lastProvTs = remoteProvTs; lsSet(LS_PROV, rProv);
+  } else if(lProv.rows && lProv.rows.length){
+    provFinal = lProv.rows; lastProvTs = lProv.ts||Date.now();
+    fbSet(FB_PROV, {rows:provFinal, ts:lastProvTs}).catch(()=>{});
+  } else {
+    provFinal = PROV_DEFAULT;
+    lastProvTs = Date.now();
+    fbSet(FB_PROV, {rows:provFinal, ts:lastProvTs}).catch(()=>{});
+    lsSet(LS_PROV, {rows:provFinal, ts:lastProvTs});
+  }
+  Prov.restore(provFinal);
+
+  // Pedidos
+  let pedFinal;
+  const remotePedTs = (rPed && rPed.ts) || 0;
+  if(remotePedTs >= (lPed.ts||0) && rPed && rPed.rows && rPed.rows.length){
+    pedFinal = rPed.rows; lastPedTs = remotePedTs; lsSet(LS_PED, rPed);
+  } else if(lPed.rows && lPed.rows.length){
+    pedFinal = lPed.rows; lastPedTs = lPed.ts||Date.now();
+    fbSet(FB_PED, {rows:pedFinal, ts:lastPedTs}).catch(()=>{});
+  } else {
+    pedFinal = [];
+    lastPedTs = Date.now();
+  }
+  Ped.restore(pedFinal);
+  Ped.refreshProveedorSelects();
+
+  // Cotizaciones (al final, ya que sus selects dependen de Pedidos y Proveedores)
+  let cotiFinal;
+  const remoteCotiTs = (rCoti && rCoti.ts) || 0;
+  if(remoteCotiTs >= (lCoti.ts||0) && rCoti && rCoti.rows && rCoti.rows.length){
+    cotiFinal = rCoti.rows; lastCotiTs = remoteCotiTs; lsSet(LS_COTI, rCoti);
+  } else if(lCoti.rows && lCoti.rows.length){
+    cotiFinal = lCoti.rows; lastCotiTs = lCoti.ts||Date.now();
+    fbSet(FB_COTI, {rows:cotiFinal, ts:lastCotiTs}).catch(()=>{});
+  } else {
+    cotiFinal = [];
+    lastCotiTs = Date.now();
+  }
+  Coti.restore(cotiFinal);
+  aplicarPermisos();
+
+  setSyncStatus("En vivo","sync-ok");
+  _cargaInicialHecha = true;
 }
 
-setInterval(async ()=>{
-  try{
-    const remoteSolic = await fbGet(FB_SOLIC);
-    if(remoteSolic && (remoteSolic.ts||0) > lastSolicTs && remoteSolic.list){
-      lastSolicTs = remoteSolic.ts;
-      lsSet(LS_SOLIC, remoteSolic);
-      SOLICITANTES = remoteSolic.list;
-      Ped.refreshSolicitanteSelects();
+function _fallbackOffline(){
+  const lPed  = lsGet(LS_PED)  || {ts:0, rows:[]};
+  const lProv = lsGet(LS_PROV) || {ts:0, rows:[]};
+  const lCoti = lsGet(LS_COTI) || {ts:0, rows:[]};
+  const lSolic = lsGet(LS_SOLIC) || {ts:0, list:[]};
+  const lEstx  = lsGet(LS_ESTX)  || {ts:0, list:[]};
+  SOLICITANTES = (lSolic.list && lSolic.list.length) ? lSolic.list : SOLICITANTES_DEFAULT.slice();
+  ESTADOS_EXTRA = Array.isArray(lEstx.list) ? lEstx.list : [];
+  rebuildEstados();
+  Ped.refreshEstadoFiltro();
+  Prov.restore((lProv.rows&&lProv.rows.length)?lProv.rows:PROV_DEFAULT);
+  Ped.restore(lPed.rows||[]);
+  Ped.refreshProveedorSelects();
+  Coti.restore(lCoti.rows||[]);
+  aplicarPermisos();
+  setSyncStatus("Sin conexión","sync-error");
+  _cargaInicialHecha = true;
+}
+
+function _marcarListo(){
+  if(!_todosInformaron()) return;
+  if(_anyError) _fallbackOffline(); else _renderInicial();
+}
+
+async function loadAll(){
+  setSyncStatus("Cargando…");
+  try{ await ensureSignedIn(); }catch(e){}
+
+  getDb().ref(FB_SOLIC).on("value", (snap)=>{
+    _rSolic = snap.val();
+    if(!_gotSolic){ _gotSolic = true; _marcarListo(); }
+    else if(_cargaInicialHecha && _rSolic && (_rSolic.ts||0) > lastSolicTs && _rSolic.list){
+      lastSolicTs = _rSolic.ts; lsSet(LS_SOLIC, _rSolic);
+      SOLICITANTES = _rSolic.list; Ped.refreshSolicitanteSelects();
     }
-    const remoteEstx = await fbGet(FB_ESTX);
-    if(remoteEstx && (remoteEstx.ts||0) > lastEstxTs && Array.isArray(remoteEstx.list)){
-      lastEstxTs = remoteEstx.ts;
-      lsSet(LS_ESTX, remoteEstx);
-      ESTADOS_EXTRA = remoteEstx.list;
-      rebuildEstados();
-      Ped.refreshEstadoSelects();
-      Ped.refreshEstadoFiltro();
+  }, ()=>{ _anyError=true; if(!_gotSolic){ _gotSolic=true; _marcarListo(); } setSyncStatus("Sin conexión","sync-error"); });
+
+  getDb().ref(FB_ESTX).on("value", (snap)=>{
+    _rEstx = snap.val();
+    if(!_gotEstx){ _gotEstx = true; _marcarListo(); }
+    else if(_cargaInicialHecha && _rEstx && (_rEstx.ts||0) > lastEstxTs && Array.isArray(_rEstx.list)){
+      lastEstxTs = _rEstx.ts; lsSet(LS_ESTX, _rEstx);
+      ESTADOS_EXTRA = _rEstx.list; rebuildEstados();
+      Ped.refreshEstadoSelects(); Ped.refreshEstadoFiltro();
     }
-    const remoteProv = await fbGet(FB_PROV);
-    if(remoteProv && (remoteProv.ts||0) > lastProvTs){
-      lastProvTs = remoteProv.ts;
-      lsSet(LS_PROV, remoteProv);
-      Prov.restore(remoteProv.rows||[]);
+  }, ()=>{ _anyError=true; if(!_gotEstx){ _gotEstx=true; _marcarListo(); } setSyncStatus("Sin conexión","sync-error"); });
+
+  getDb().ref(FB_PROV).on("value", (snap)=>{
+    _rProv = snap.val();
+    if(!_gotProv){ _gotProv = true; _marcarListo(); }
+    else if(_cargaInicialHecha && _rProv && (_rProv.ts||0) > lastProvTs){
+      lastProvTs = _rProv.ts; lsSet(LS_PROV, _rProv);
+      Prov.restore(_rProv.rows||[]); Ped.refreshProveedorSelects();
+      Coti.refreshPacienteProductoSelects(); Coti.refreshProveedorSelects();
     }
-    const remotePed = await fbGet(FB_PED);
-    if(remotePed && (remotePed.ts||0) > lastPedTs){
-      lastPedTs = remotePed.ts;
-      lsSet(LS_PED, remotePed);
-      Ped.restore(remotePed.rows||[]);
+  }, ()=>{ _anyError=true; if(!_gotProv){ _gotProv=true; _marcarListo(); } setSyncStatus("Sin conexión","sync-error"); });
+
+  getDb().ref(FB_PED).on("value", (snap)=>{
+    _rPed = snap.val();
+    if(!_gotPed){ _gotPed = true; _marcarListo(); }
+    else if(_cargaInicialHecha && _rPed && (_rPed.ts||0) > lastPedTs){
+      lastPedTs = _rPed.ts; lsSet(LS_PED, _rPed);
+      Ped.restore(_rPed.rows||[]); Ped.refreshProveedorSelects();
     }
-    Ped.refreshProveedorSelects();
-    Coti.refreshPacienteProductoSelects();
-    Coti.refreshProveedorSelects();
-    const remoteCoti = await fbGet(FB_COTI);
-    if(remoteCoti && (remoteCoti.ts||0) > lastCotiTs){
-      lastCotiTs = remoteCoti.ts;
-      lsSet(LS_COTI, remoteCoti);
-      Coti.restore(remoteCoti.rows||[]);
+  }, ()=>{ _anyError=true; if(!_gotPed){ _gotPed=true; _marcarListo(); } setSyncStatus("Sin conexión","sync-error"); });
+
+  getDb().ref(FB_COTI).on("value", (snap)=>{
+    _rCoti = snap.val();
+    if(!_gotCoti){ _gotCoti = true; _marcarListo(); }
+    else if(_cargaInicialHecha && _rCoti && (_rCoti.ts||0) > lastCotiTs){
+      lastCotiTs = _rCoti.ts; lsSet(LS_COTI, _rCoti);
+      Coti.restore(_rCoti.rows||[]);
     }
-    aplicarPermisos();
-    setSyncStatus("En vivo","sync-ok");
-  } catch(e){
-    setSyncStatus("Sin conexión","sync-error");
-  }
-}, 30000);
+  }, ()=>{ _anyError=true; if(!_gotCoti){ _gotCoti=true; _marcarListo(); } setSyncStatus("Sin conexión","sync-error"); });
+
+  if(_cargaInicialHecha) aplicarPermisos();
+}
 
 /* ══════════════════════ NAV SCROLLSPY ══════════════════════ */
 function goSection(el, id){
