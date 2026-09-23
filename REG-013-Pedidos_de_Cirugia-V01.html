@@ -220,6 +220,11 @@ select option{background-color:#fff!important;background-image:none!important;co
 .coti-archivo-thumbs{display:flex;flex-wrap:wrap;gap:5px;}
 .coti-archivo-thumb{position:relative;width:34px;height:34px;flex:0 0 auto;}
 .archivo-pdf-badge{width:34px;height:34px;display:flex;align-items:center;justify-content:center;border:1px solid var(--border);border-radius:3px;background:var(--accent-l);color:var(--accent-d);font-family:var(--mono);font-size:9px;font-weight:700;text-decoration:none;cursor:pointer;padding:0;}
+.prov-empresa{text-transform:uppercase;}
+.lp-cell{display:flex;align-items:flex-start;gap:6px;}
+.lp-thumbs{display:flex;flex-wrap:wrap;gap:5px;}
+.lp-thumb{position:relative;width:34px;height:34px;flex:0 0 auto;}
+.lp-thumb.lp-loading .archivo-pdf-badge{opacity:.5;cursor:progress;}
 .hist-entry{border-bottom:1px solid var(--border);padding:8px 0;}
 .hist-entry:last-child{border-bottom:none;}
 .hist-meta{font-size:10px;color:var(--text-3);margin-bottom:4px;font-family:var(--mono);}
@@ -510,10 +515,11 @@ select option{background-color:#fff!important;background-image:none!important;co
           <table class="tbl">
             <colgroup>
               <col style="width:3%">  <!-- #         -->
-              <col style="width:20%"> <!-- Empresa   -->
-              <col style="width:25%"> <!-- Correo    -->
-              <col style="width:20%"> <!-- Contacto  -->
-              <col style="width:27%"> <!-- Categoría -->
+              <col style="width:18%"> <!-- Empresa   -->
+              <col style="width:22%"> <!-- Correo    -->
+              <col style="width:18%"> <!-- Contacto  -->
+              <col style="width:22%"> <!-- Categoría -->
+              <col style="width:12%"> <!-- Lista precios -->
               <col style="width:5%">  <!-- Eliminar  -->
             </colgroup>
             <thead>
@@ -523,6 +529,7 @@ select option{background-color:#fff!important;background-image:none!important;co
                 <th>Correo</th>
                 <th>Contacto</th>
                 <th>Categoría</th>
+                <th>Lista precios</th>
                 <th class="no-print">—</th>
               </tr>
             </thead>
@@ -638,6 +645,17 @@ select option{background-color:#fff!important;background-image:none!important;co
 const FB_PED   = "/pedcx/pedidos";
 const FB_PROV  = "/pedcx/proveedores";
 const FB_COTI  = "/pedcx/cotizaciones";
+const FB_LISTAS = "/pedcx/listas_precios";   // contenido de las listas de precios (base64), una entrada por archivo
+const LP_MAX_BYTES = 10*1024*1024;            // 10 MB por archivo
+const LP_ACCEPT = ".pdf,.xls,.xlsx,application/pdf,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+const LP_CACHE = {};                          // id -> dataURL ya descargado en esta sesión
+function lpTipo(file){
+  const n = (file.name||"").toLowerCase();
+  if(file.type==="application/pdf" || n.endsWith(".pdf")) return "pdf";
+  if(n.endsWith(".xlsx") || n.endsWith(".xls")) return "excel";
+  return null;
+}
+function comoArrayLP(v){ if(!v) return []; return Array.isArray(v) ? v.filter(Boolean) : Object.values(v).filter(Boolean); }
 const LS_PED   = "pedcx_ped_v1";
 const LS_PROV  = "pedcx_prov_v1";
 const LS_COTI  = "pedcx_coti_v1";
@@ -856,6 +874,9 @@ function aplicarPermisos(){
     .forEach(el=> el.disabled = !puedeProv);
   const btnProv = document.getElementById("btn-agregar-proveedor");
   if(btnProv) btnProv.disabled = !puedeProv;
+  // Lista de precios: abrir con "proveedores" o "pedidos"; adjuntar/quitar solo con "proveedores"
+  const puedeVerListas = puedeProv || tienePermiso("pedidos");
+  document.querySelectorAll("#prov-tbody .lp-open").forEach(el=> el.disabled = !puedeVerListas);
 
   // Usuarios: pestaña visible solo con "administracion"
   const navUsuarios = document.getElementById("nav-tab-usuarios");
@@ -967,6 +988,12 @@ function mkDirty(id){ setInlineStatus(id, "Cambios sin guardar", "dirty"); }
 function mkSaved(id){ setInlineStatus(id, "✓ Guardado " + new Date().toLocaleTimeString(), "ok"); }
 
 /* ══════════════════════ HELPERS GENERALES ══════════════════════ */
+// Busca el proveedor de la lista sin distinguir mayúsculas (los nombres viejos pueden estar en minúscula)
+function provMatch(provs, cur){
+  if(!cur) return null;
+  const c = String(cur).trim().toUpperCase();
+  return provs.find(p=>String(p).trim().toUpperCase()===c) || null;
+}
 function esc(s){ return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
 function genId(){ return "id"+Date.now().toString(36)+Math.random().toString(36).slice(2,8); }
 function autoGrow(el){
@@ -1303,7 +1330,8 @@ const Ped = {
   },
   proveedorSelect(cur){
     const provs = [...document.querySelectorAll("#prov-tbody tr")].map(tr=>tr.querySelector(".prov-empresa")?.value||"").filter(Boolean);
-    const opts = provs.map(p=>`<option value="${esc(p)}"${p===cur?" selected":""}>${esc(p)}</option>`).join("");
+    const m = provMatch(provs, cur);
+    const opts = provs.map(p=>`<option value="${esc(p)}"${p===m?" selected":""}>${esc(p)}</option>`).join("");
     return `<select class="ts prov-sel" onchange="mkDirty('ped-st')"><option value="">— proveedor —</option>${opts}</select>`;
   },
   estSelect(cur){
@@ -1705,8 +1733,9 @@ const Ped = {
     const provs = [...document.querySelectorAll("#prov-tbody tr")].map(tr=>tr.querySelector(".prov-empresa")?.value||"").filter(Boolean);
     document.querySelectorAll("#ped-tbody .prov-sel").forEach(sel=>{
       const cur=sel.value;
-      sel.innerHTML = `<option value="">— proveedor —</option>` + provs.map(p=>`<option value="${esc(p)}"${p===cur?" selected":""}>${esc(p)}</option>`).join("");
-      if(provs.includes(cur)) sel.value=cur;
+      const m = provMatch(provs, cur);
+      sel.innerHTML = `<option value="">— proveedor —</option>` + provs.map(p=>`<option value="${esc(p)}"${p===m?" selected":""}>${esc(p)}</option>`).join("");
+      if(m) sel.value=m;
     });
   },
   async save(){
@@ -1759,7 +1788,7 @@ const Prov = {
     tr.innerHTML=`
       <td data-label="#"><span class="row-num"></span></td>
       <td data-label="Empresa">
-        <input class="ti prov-empresa" type="text" value="${esc(d.empresa||"")}" oninput="mkDirty('prov-st');Prov.validarEmpresa(this);Ped.refreshProveedorSelects();Coti.refreshProveedorSelects()" onblur="Prov.sortRows()">
+        <input class="ti prov-empresa" type="text" value="${esc(String(d.empresa||"").toUpperCase())}" oninput="Prov.aMayus(this);mkDirty('prov-st');Prov.validarEmpresa(this);Ped.refreshProveedorSelects();Coti.refreshProveedorSelects()" onblur="Prov.sortRows()">
         <div class="email-msg dup-msg">Ya existe un proveedor con este nombre</div>
       </td>
       <td data-label="Correo">
@@ -1769,8 +1798,116 @@ const Prov = {
       </td>
       <td data-label="Contacto"><input class="ti prov-contacto" type="text" value="${esc(d.contacto||"")}" oninput="mkDirty('prov-st')"></td>
       <td data-label="Categoría"><input class="ti prov-categoria" type="text" value="${esc(d.categoria||"")}" oninput="mkDirty('prov-st')"></td>
+      <td data-label="Lista precios">
+        <div class="lp-cell">
+          <button class="btn btn-light btn-sm btn-icon lp-add no-print" onclick="this.nextElementSibling.click()" title="Adjuntar PDF o Excel" aria-label="Adjuntar lista de precios">${CAMERA_ICON}</button>
+          <input type="file" accept="${LP_ACCEPT}" multiple class="lp-input no-print" style="display:none" onchange="Prov.onListaSelect(this)">
+          <div class="lp-thumbs">${Prov.renderListasHtml(d.listas||[])}</div>
+        </div>
+      </td>
       <td data-label="Eliminar" class="no-print" style="text-align:center"><button class="del-btn" onclick="Prov.elim(this)">×</button></td>`;
     return tr;
+  },
+  aMayus(inp){
+    const u = inp.value.toUpperCase();
+    if(u === inp.value) return;
+    const s = inp.selectionStart, e = inp.selectionEnd;
+    inp.value = u;
+    try{ inp.setSelectionRange(s, e); }catch(_){}
+  },
+  /* ── Lista de precios (PDF / Excel) ──
+     Solo metadatos en la fila ({id,name,type}); el contenido va aparte en
+     FB_LISTAS/{id} para no re-subir todos los archivos en cada guardado. */
+  renderListasHtml(listas){
+    return comoArrayLP(listas).map(f=>{
+      const tag = f.type==="pdf" ? "PDF" : "XLS";
+      return `<div class="lp-thumb" data-id="${esc(f.id||"")}" data-name="${esc(f.name||"")}" data-type="${esc(f.type||"")}">
+        <button type="button" class="archivo-pdf-badge lp-open" onclick="Prov.abrirLista(this)" title="${esc(f.name||tag)}">${tag}</button>
+        <button class="foto-del lp-del no-print" onclick="Prov.eliminarLista(this)" title="Quitar archivo">×</button>
+      </div>`;
+    }).join("");
+  },
+  collectListas(tr){
+    return [...tr.querySelectorAll(".lp-thumb")].map(div=>({
+      id: div.dataset.id||"", name: div.dataset.name||"", type: div.dataset.type||""
+    })).filter(f=>f.id);
+  },
+  onListaSelect(input){
+    const tr = input.closest("tr");
+    const wrap = tr.querySelector(".lp-thumbs");
+    const files = [...input.files];
+    input.value = "";
+    if(!files.length) return;
+    const validos = [], rechazados = [];
+    files.forEach(f=>{
+      const t = lpTipo(f);
+      if(!t) rechazados.push(f.name+" (formato no permitido)");
+      else if(f.size > LP_MAX_BYTES) rechazados.push(f.name+" (supera "+(LP_MAX_BYTES/1048576)+" MB)");
+      else validos.push({file:f, type:t});
+    });
+    if(rechazados.length) alert("No se adjuntaron:\n"+rechazados.join("\n")+"\n\nSolo PDF o Excel (.xls, .xlsx).");
+    if(!validos.length) return;
+    setInlineStatus("prov-st", "Subiendo archivo…", "dirty");
+    Promise.all(validos.map(v=>new Promise((res, rej)=>{
+      const r = new FileReader();
+      r.onload = e=> res({id:"lp"+Date.now().toString(36)+Math.random().toString(36).slice(2,8), name:v.file.name, type:v.type, data:e.target.result});
+      r.onerror = rej;
+      r.readAsDataURL(v.file);
+    }))).then(async results=>{
+      for(const f of results){
+        await fbSet(FB_LISTAS+"/"+f.id, {name:f.name, type:f.type, data:f.data, ts:Date.now()});
+        LP_CACHE[f.id] = f.data;
+      }
+      wrap.insertAdjacentHTML("beforeend", Prov.renderListasHtml(results));
+      aplicarPermisos();
+      mkDirty("prov-st");
+      scheduleSaveProv();
+    }).catch(()=>{
+      setSyncStatus("Sin conexión","sync-error");
+      alert("No se pudo subir el archivo. Verificá la conexión e intentá de nuevo.");
+      mkDirty("prov-st");
+    });
+  },
+  async abrirLista(btn){
+    const div = btn.closest(".lp-thumb");
+    const id = div.dataset.id, name = div.dataset.name||"lista", type = div.dataset.type;
+    if(!id || div.classList.contains("lp-loading")) return;
+    // Para PDF: abrir la pestaña ya (dentro del clic) para que no la bloquee el navegador
+    const win = type==="pdf" ? window.open("", "_blank") : null;
+    try{
+      let data = LP_CACHE[id];
+      if(!data){
+        div.classList.add("lp-loading");
+        const rec = await fbGet(FB_LISTAS+"/"+id);
+        data = rec && rec.data;
+        if(!data) throw new Error("vacío");
+        LP_CACHE[id] = data;
+      }
+      const blob = base64ToBlob(data);
+      const url = URL.createObjectURL(blob);
+      if(type==="pdf"){
+        if(win) win.location.href = url; else window.open(url, "_blank");
+      } else {
+        const a = document.createElement("a");
+        a.href = url; a.download = name;
+        document.body.appendChild(a); a.click(); a.remove();
+      }
+      setTimeout(()=>URL.revokeObjectURL(url), 60000);
+    }catch(e){
+      if(win) win.close();
+      alert("No se pudo abrir el archivo. Verificá la conexión e intentá de nuevo.");
+    }finally{
+      div.classList.remove("lp-loading");
+    }
+  },
+  eliminarLista(btn){
+    if(!confirm("¿Quitar este archivo?")) return;
+    const div = btn.closest(".lp-thumb");
+    const id = div.dataset.id;
+    div.remove();
+    mkDirty("prov-st");
+    scheduleSaveProv();
+    if(id){ delete LP_CACHE[id]; fbSet(FB_LISTAS+"/"+id, null).catch(()=>{}); }
   },
   validarEmpresa(inp){
     const msg=inp.parentElement.querySelector(".dup-msg");
@@ -1821,7 +1958,9 @@ const Prov = {
   elim(btn){
     const tr=btn.closest("tr");
     if(!confirm("¿Eliminar este proveedor?")) return;
-    tr.remove(); Prov._renum(); mkDirty("prov-st");
+    const lpIds = Prov.collectListas(tr).map(f=>f.id);
+    tr.remove();
+    lpIds.forEach(id=>{ delete LP_CACHE[id]; fbSet(FB_LISTAS+"/"+id, null).catch(()=>{}); }); Prov._renum(); mkDirty("prov-st");
     Ped.refreshProveedorSelects();
     Coti.refreshProveedorSelects();
     scheduleSaveProv();
@@ -1831,7 +1970,8 @@ const Prov = {
       empresa: tr.querySelector(".prov-empresa")?.value||"",
       correo: tr.querySelector(".prov-correo")?.value||"",
       contacto: tr.querySelector(".prov-contacto")?.value||"",
-      categoria: tr.querySelector(".prov-categoria")?.value||""
+      categoria: tr.querySelector(".prov-categoria")?.value||"",
+      listas: Prov.collectListas(tr)
     }));
   },
   restore(rows){
@@ -1874,7 +2014,8 @@ const Coti = {
   },
   proveedorOptions(cur){
     const provs = [...document.querySelectorAll("#prov-tbody .prov-empresa")].map(i=>i.value.trim()).filter(Boolean);
-    const opts = provs.map(p=>`<option value="${esc(p)}"${p===cur?" selected":""}>${esc(p)}</option>`).join("");
+    const m = cur==="otros" ? null : provMatch(provs, cur);
+    const opts = provs.map(p=>`<option value="${esc(p)}"${p===m?" selected":""}>${esc(p)}</option>`).join("");
     const otroSel = cur==="otros"?" selected":"";
     return `<select class="ts coti-prov-sel" onchange="Coti.onProveedorChange(this)"><option value="">— proveedor —</option>${opts}<option value="otros"${otroSel}>Otros</option></select>`;
   },
@@ -2104,10 +2245,11 @@ const Coti = {
     const provs = [...document.querySelectorAll("#prov-tbody .prov-empresa")].map(i=>i.value.trim()).filter(Boolean);
     document.querySelectorAll("#coti-list .coti-prov-sel").forEach(sel=>{
       const cur=sel.value;
-      const opts = provs.map(p=>`<option value="${esc(p)}"${p===cur?" selected":""}>${esc(p)}</option>`).join("");
+      const m = cur==="otros" ? null : provMatch(provs, cur);
+      const opts = provs.map(p=>`<option value="${esc(p)}"${p===m?" selected":""}>${esc(p)}</option>`).join("");
       const otroSel = cur==="otros"?" selected":"";
       sel.innerHTML = `<option value="">— proveedor —</option>${opts}<option value="otros"${otroSel}>Otros</option>`;
-      if(provs.includes(cur) || cur==="otros") sel.value=cur;
+      if(cur==="otros") sel.value=cur; else if(m) sel.value=m;
     });
   },
   _ser(){
