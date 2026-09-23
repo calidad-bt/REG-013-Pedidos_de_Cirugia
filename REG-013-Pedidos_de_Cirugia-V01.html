@@ -1980,11 +1980,16 @@ const Prov = {
     data.forEach(d=>tb.appendChild(Prov._buildTr(d)));
     Prov.sortRows();
     tb.querySelectorAll(".prov-correo").forEach(inp=>{ if(inp.value) Prov.validarCorreo(inp); });
+    // Mantener el filtro del buscador al redibujar
+    Prov.filtrar(document.getElementById("prov-search")?.value||"");
   },
   async save(){
     const rows=Prov._ser(), pay={rows,ts:Date.now()};
     lsSet(LS_PROV,pay);
-    try{ await fbSet(FB_PROV,pay); lastProvTs=pay.ts; setSyncStatus("En vivo","sync-ok"); }
+    // Marcar el ts ANTES de escribir: el SDK dispara onValue en el mismo set(),
+    // y si no, el listener toma el guardado propio como remoto y redibuja la tabla.
+    lastProvTs=pay.ts;
+    try{ await fbSet(FB_PROV,pay); setSyncStatus("En vivo","sync-ok"); }
     catch(e){ setSyncStatus("Sin conexión","sync-error"); }
     mkSaved("prov-st");
     Ped.refreshProveedorSelects();
@@ -2454,6 +2459,7 @@ async function loadAll(){
       lastProvTs = _rProv.ts; lsSet(LS_PROV, _rProv);
       Prov.restore(_rProv.rows||[]); Ped.refreshProveedorSelects();
       Coti.refreshPacienteProductoSelects(); Coti.refreshProveedorSelects();
+      aplicarPermisos();
     }
   }, ()=>{ _anyError=true; if(!_gotProv){ _gotProv=true; _marcarListo(); } setSyncStatus("Sin conexión","sync-error"); });
 
