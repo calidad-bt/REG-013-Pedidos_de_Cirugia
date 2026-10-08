@@ -165,6 +165,31 @@ select option{background-color:#fff!important;background-image:none!important;co
 .co-enproceso + .sel-arrow{border-top-color:#FFFFFF;}
 .co-aprobado + .sel-arrow{border-top-color:#1C2226;}
 
+/* ── PROVEEDORES: categoría A / B / C ───────────────────── */
+.sel-wrap select.sel-cat{background-image:none!important;padding-right:18px;padding-left:4px;font-weight:700;text-align:center;text-align-last:center;}
+.cat-none{background-color:#F0F1F3!important;color:var(--text-2)!important;border-color:var(--border)!important;}
+.cat-A{background-color:#C8E6C9!important;color:#1B5E20!important;border-color:#81C784!important;}
+.cat-B{background-color:#FFF59D!important;color:#6B5500!important;border-color:#E3CF4A!important;}
+.cat-C{background-color:#FFCC80!important;color:#8A3D00!important;border-color:#F0A54A!important;}
+.cat-none + .sel-arrow{border-top-color:var(--text-2);}
+.cat-A + .sel-arrow{border-top-color:#1B5E20;}
+.cat-B + .sel-arrow{border-top-color:#6B5500;}
+.cat-C + .sel-arrow{border-top-color:#8A3D00;}
+
+/* ── PROVEEDORES: selección múltiple (Sistema / Tipo) ───── */
+.ms-btn{width:100%;min-height:28px;display:flex;align-items:center;flex-wrap:wrap;gap:3px;padding:3px 22px 3px 5px;border:1px solid transparent;border-radius:3px;background-color:transparent;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='9' height='6'%3E%3Cpath d='M0 0l4.5 6L9 0z' fill='%235A6470'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 6px center;font-family:var(--font);font-size:12px;color:var(--text);text-align:left;cursor:pointer;}
+.ms-btn:hover:not([disabled]){border-color:var(--border);background-color:white;}
+.ms-btn.open{border-color:var(--accent);background-color:white;box-shadow:0 0 0 2px rgba(14,107,138,.08);}
+.ms-ph{color:var(--text-3);}
+.ms-chip{display:inline-block;border-radius:10px;font-size:11px;font-weight:600;padding:1px 7px;background:var(--accent-l);color:var(--accent-d);border:1px solid #BFDDE8;line-height:1.35;}
+.ms-panel{position:fixed;z-index:600;background:var(--surface);border:1px solid var(--border-d);border-radius:var(--radius);box-shadow:0 4px 14px rgba(0,0,0,.12);padding:4px 0;max-height:300px;overflow-y:auto;min-width:200px;display:none;}
+.ms-panel.open{display:block;}
+.ms-opt{display:flex;align-items:center;gap:8px;padding:5px 12px;font-size:12.5px;cursor:pointer;user-select:none;}
+.ms-opt:hover{background:#F4F8FA;}
+.ms-opt input{accent-color:var(--accent);width:14px;height:14px;cursor:pointer;}
+.ms-sep{height:1px;background:var(--border);margin:4px 0;}
+.ms-otros{color:var(--accent);font-weight:600;}
+
 /* ── COTIZACIONES: tarjetas ──────────────────────────────── */
 .coti-list{display:flex;flex-direction:column;gap:14px;}
 .coti-card{border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;background:var(--surface);}
@@ -172,7 +197,10 @@ select option{background-color:#fff!important;background-image:none!important;co
 .coti-field{padding:6px 8px;border-right:1px solid var(--border);flex:1 1 160px;min-width:0;}
 .coti-field.f-sm{flex:0 0 90px;}
 .coti-field.f-md{flex:0 0 150px;}
+.coti-field.f-fecha{flex:0 0 110px;}
 .coti-field:last-child{border-right:none;}
+.coti-fpedido{display:block;font-family:var(--mono);font-size:12.5px;font-weight:600;color:var(--text);padding:5px 5px;min-height:28px;}
+.coti-fpedido.vacio{color:var(--text-3);font-weight:400;}
 .coti-del-wrap{flex:0 0 34px;display:flex;align-items:center;justify-content:center;padding:6px;}
 .coti-lbl{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text-2);display:block;margin-bottom:3px;}
 .coti-provs-head{display:flex;background:var(--surface);padding:6px 8px 0;}
@@ -319,10 +347,11 @@ select option{background-color:#fff!important;background-image:none!important;co
 
 @media print {
   @page { size: A3 landscape; margin: 8mm; }
-  nav, .no-print { display: none !important; }
+  nav, .no-print, .ms-panel { display: none !important; }
   body { background: white; }
   .layout { padding: 0; gap: 24px; }
   .card { box-shadow: none; }
+  .ms-btn { background-image: none; padding-right: 5px; }
   * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 }
 </style>
@@ -506,7 +535,7 @@ select option{background-color:#fff!important;background-image:none!important;co
         <div class="sec-title">Proveedores<span class="sync-inline" id="prov-st">—</span></div>
 
         <div class="search-row no-print">
-          <input type="text" class="search-input" id="prov-search" placeholder="Buscar por empresa, correo, contacto o categoría..." oninput="Prov.filtrar(this.value)">
+          <input type="text" class="search-input" id="prov-search" placeholder="Buscar por empresa, correo, contacto, sistema, categoría, zona o tipo..." oninput="Prov.filtrar(this.value)">
         </div>
 
         <button class="add-row-btn no-print" id="btn-agregar-proveedor" onclick="Prov.addRow()">+ Agregar proveedor</button>
@@ -514,13 +543,16 @@ select option{background-color:#fff!important;background-image:none!important;co
         <div class="tbl-wrap">
           <table class="tbl">
             <colgroup>
-              <col style="width:3%">  <!-- #         -->
-              <col style="width:18%"> <!-- Empresa   -->
-              <col style="width:22%"> <!-- Correo    -->
-              <col style="width:18%"> <!-- Contacto  -->
-              <col style="width:22%"> <!-- Categoría -->
-              <col style="width:12%"> <!-- Lista precios -->
-              <col style="width:5%">  <!-- Eliminar  -->
+              <col style="width:3%">  <!-- #              -->
+              <col style="width:13%"> <!-- Empresa        -->
+              <col style="width:16%"> <!-- Correo         -->
+              <col style="width:12%"> <!-- Contacto       -->
+              <col style="width:16%"> <!-- Sistema        -->
+              <col style="width:7%">  <!-- Categoría      -->
+              <col style="width:9%">  <!-- Zona           -->
+              <col style="width:11%"> <!-- Tipo           -->
+              <col style="width:9%">  <!-- Lista precios/prod -->
+              <col style="width:4%">  <!-- Eliminar       -->
             </colgroup>
             <thead>
               <tr>
@@ -528,8 +560,11 @@ select option{background-color:#fff!important;background-image:none!important;co
                 <th>Empresa</th>
                 <th>Correo</th>
                 <th>Contacto</th>
+                <th>Sistema</th>
                 <th>Categoría</th>
-                <th>Lista precios</th>
+                <th>Zona</th>
+                <th>Tipo</th>
+                <th>Lista precios/prod</th>
                 <th class="no-print">—</th>
               </tr>
             </thead>
@@ -585,6 +620,9 @@ select option{background-color:#fff!important;background-image:none!important;co
   </div>
 
 </div><!-- /layout -->
+
+<!-- Panel flotante de selección múltiple (Sistema / Tipo) -->
+<div class="ms-panel no-print" id="msPanel"></div>
 
 <!-- MODAL ANULAR -->
 <div class="overlay no-print" id="anularOverlay">
@@ -874,6 +912,7 @@ function aplicarPermisos(){
     .forEach(el=> el.disabled = !puedeProv);
   const btnProv = document.getElementById("btn-agregar-proveedor");
   if(btnProv) btnProv.disabled = !puedeProv;
+  if(!puedeProv) MS.close();
   // Lista de precios: abrir con "proveedores" o "pedidos"; adjuntar/quitar solo con "proveedores"
   const puedeVerListas = puedeProv || tienePermiso("pedidos");
   document.querySelectorAll("#prov-tbody .lp-open").forEach(el=> el.disabled = !puedeVerListas);
@@ -1273,6 +1312,137 @@ const PROV_DEFAULT = [
  ["Imeco","","","Cadera/columna/osteosinitesis"]
 ].map(r=>({empresa:r[0],correo:r[1],contacto:r[2],categoria:r[3]}));
 
+/* ── Proveedores: Sistema / Categoría / Tipo ─────────────────
+   Sistema y Tipo son de selección múltiple. Las opciones de Sistema
+   agregadas con "Otros" se guardan junto con la hoja de proveedores
+   (campo sistemasExtra del mismo nodo, sin nodo ni listener nuevo). */
+const SISTEMAS_BASE = ["Osteosintesis","Clavos","Tutores","Protesis cadera y rodilla","Columna","Artroscopia","Descartables","Equipo motorizado","CMF","Protesis a medida","Cx general"];
+let SISTEMAS_EXTRA = [];
+const TIPOS_PROV = ["Caja","Reposición","CX completa"];
+const CATEGORIAS_PROV = ["A","B","C"];
+function sistemasOpciones(){ return SISTEMAS_BASE.concat(SISTEMAS_EXTRA); }
+function ciIncluye(lista, v){ const c=String(v).trim().toLowerCase(); return lista.some(x=>String(x).trim().toLowerCase()===c); }
+function agregarSistemaExtra(v){
+  v = String(v||"").trim();
+  if(!v || ciIncluye(sistemasOpciones(), v)) return;
+  SISTEMAS_EXTRA.push(v);
+  SISTEMAS_EXTRA.sort((a,b)=>a.localeCompare(b,"es"));
+}
+
+/* ── Selección múltiple con panel flotante ──
+   El panel vive en <body> con position:fixed para que no lo recorte
+   el overflow de la tabla ni de la card. */
+const MS = {
+  _btn:null,
+  opciones(kind){ return kind==="sistema" ? sistemasOpciones() : TIPOS_PROV; },
+  placeholder(kind){ return kind==="sistema" ? "— sistema —" : "— tipo —"; },
+  get(wrap){ try{ const v=JSON.parse(wrap.dataset.vals||"[]"); return Array.isArray(v)?v:[]; }catch(e){ return []; } },
+  ordenar(kind, vals){
+    const ops = MS.opciones(kind).map(o=>o.toLowerCase());
+    return vals.slice().sort((a,b)=>{
+      let ia=ops.indexOf(a.toLowerCase()), ib=ops.indexOf(b.toLowerCase());
+      if(ia<0) ia=999; if(ib<0) ib=999;
+      return ia-ib;
+    });
+  },
+  chips(kind, vals){
+    if(!vals.length) return `<span class="ms-ph">${MS.placeholder(kind)}</span>`;
+    return vals.map(v=>`<span class="ms-chip">${esc(v)}</span>`).join("");
+  },
+  html(kind, vals, extraClass){
+    vals = MS.ordenar(kind, comoArrayLP(vals));
+    return `<div class="ms ${extraClass||""}" data-kind="${kind}" data-vals="${esc(JSON.stringify(vals))}"><button type="button" class="ms-btn" onclick="MS.open(this)">${MS.chips(kind, vals)}</button></div>`;
+  },
+  set(wrap, vals){
+    const kind = wrap.dataset.kind;
+    vals = MS.ordenar(kind, vals);
+    wrap.dataset.vals = JSON.stringify(vals);
+    const btn = wrap.querySelector(".ms-btn");
+    if(btn) btn.innerHTML = MS.chips(kind, vals);
+  },
+  open(btn){
+    if(btn.disabled) return;
+    if(MS._btn===btn){ MS.close(); return; }
+    MS.close();
+    MS._btn = btn;
+    btn.classList.add("open");
+    MS._render();
+    document.getElementById("msPanel").classList.add("open");
+    MS._pos();
+  },
+  _render(){
+    const wrap = MS._btn.closest(".ms");
+    const kind = wrap.dataset.kind;
+    const vals = MS.get(wrap);
+    const p = document.getElementById("msPanel");
+    p.innerHTML = MS.opciones(kind).map(o=>`
+      <label class="ms-opt"><input type="checkbox" value="${esc(o)}"${ciIncluye(vals,o)?" checked":""} onchange="MS.toggle(this)">${esc(o)}</label>`).join("")
+      + (kind==="sistema" ? `<div class="ms-sep"></div><div class="ms-opt ms-otros" onclick="MS.agregarOtro()">+ Otros…</div>` : "");
+  },
+  toggle(cb){
+    if(!MS._btn) return;
+    const wrap = MS._btn.closest(".ms");
+    let vals = MS.get(wrap).filter(v=>v.toLowerCase()!==cb.value.toLowerCase());
+    if(cb.checked) vals.push(cb.value);
+    MS.set(wrap, vals);
+    MS._pos();
+    mkDirty("prov-st");
+    scheduleSaveProv();
+  },
+  agregarOtro(){
+    if(!MS._btn) return;
+    const wrap = MS._btn.closest(".ms");
+    const nombre = prompt("Nombre del sistema:");
+    if(nombre===null) return;
+    const limpio = nombre.trim();
+    if(!limpio) return;
+    const existente = sistemasOpciones().find(o=>o.toLowerCase()===limpio.toLowerCase());
+    const val = existente || limpio;
+    if(!existente) agregarSistemaExtra(val);
+    const vals = MS.get(wrap);
+    if(!ciIncluye(vals, val)) vals.push(val);
+    MS.set(wrap, vals);
+    MS._render();
+    MS._pos();
+    mkDirty("prov-st");
+    scheduleSaveProv();
+  },
+  _pos(){
+    if(!MS._btn) return;
+    const p = document.getElementById("msPanel");
+    const r = MS._btn.getBoundingClientRect();
+    p.style.minWidth = Math.max(200, r.width) + "px";
+    const ph = p.offsetHeight, pw = p.offsetWidth;
+    const vh = window.innerHeight, vw = window.innerWidth;
+    let top = r.bottom + 2;
+    if(top + ph > vh - 8 && r.top - ph - 2 > 8) top = r.top - ph - 2;
+    let left = r.left;
+    if(left + pw > vw - 8) left = Math.max(8, vw - pw - 8);
+    p.style.top = top + "px";
+    p.style.left = left + "px";
+  },
+  close(){
+    const p = document.getElementById("msPanel");
+    if(p) p.classList.remove("open");
+    if(MS._btn) MS._btn.classList.remove("open");
+    MS._btn = null;
+  }
+};
+document.addEventListener("mousedown", e=>{
+  if(!MS._btn) return;
+  const p = document.getElementById("msPanel");
+  if(p.contains(e.target) || MS._btn.contains(e.target)) return;
+  MS.close();
+});
+document.addEventListener("keydown", e=>{ if(e.key==="Escape") MS.close(); });
+window.addEventListener("scroll", e=>{
+  if(!MS._btn) return;
+  const p = document.getElementById("msPanel");
+  if(e.target instanceof Node && p.contains(e.target)) return;
+  MS.close();
+}, true);
+window.addEventListener("resize", ()=>MS.close());
+
 /* ══════════════════════ PEDIDOS ══════════════════════ */
 let anularTargetTr = null;
 
@@ -1665,6 +1835,7 @@ const Ped = {
     Ped.updateKpis();
     mkDirty("ped-st");
     scheduleSavePed();
+    Coti.refreshFechas();
   },
   addRow(){
     const tb=document.getElementById("ped-tbody");
@@ -1782,9 +1953,52 @@ document.getElementById("anularOverlay").addEventListener("click", function(e){ 
 
 /* ══════════════════════ PROVEEDORES ══════════════════════ */
 const Prov = {
+  /* Datos viejos: "categoria" era texto libre (ej. "columna+cmf"). Ahora:
+     sistemas = [] (multi), categoria = "A"|"B"|"C", tipos = [] (multi), zona = texto.
+     v2:true marca las filas ya convertidas (Firebase borra los arrays vacíos,
+     así que no alcanza con mirar si existe "sistemas"). El texto viejo queda en
+     categoriaAnt y se muestra como tooltip en la celda Sistema. */
+  _mapearSistemas(txt){
+    const t = String(txt||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase();
+    const reglas = [
+      [/osteosin|\bosteo\b/, "Osteosintesis"],
+      [/clavo/, "Clavos"],
+      [/tutor/, "Tutores"],
+      [/cadera|rodilla/, "Protesis cadera y rodilla"],
+      [/columna/, "Columna"],
+      [/artroscop/, "Artroscopia"],
+      [/descartable/, "Descartables"],
+      [/motor/, "Equipo motorizado"],
+      [/\bcmf\b/, "CMF"],
+      [/a medida/, "Protesis a medida"]
+    ];
+    return reglas.filter(([re])=>re.test(t)).map(([,v])=>v);
+  },
+  _migrar(d){
+    if(d.v2) return { sistemas:comoArrayLP(d.sistemas), categoria:d.categoria||"", catAnt:d.categoriaAnt||"", migrado:false };
+    const txt = String(d.categoria||"").trim();
+    if(CATEGORIAS_PROV.includes(txt.toUpperCase())) return { sistemas:comoArrayLP(d.sistemas), categoria:txt.toUpperCase(), catAnt:"", migrado:true };
+    return { sistemas:Prov._mapearSistemas(txt), categoria:"", catAnt:txt, migrado:!!txt };
+  },
+  catSelect(cur){
+    cur = CATEGORIAS_PROV.includes(cur) ? cur : "";
+    const cls = cur ? "cat-"+cur : "cat-none";
+    const opts = [["","—"]].concat(CATEGORIAS_PROV.map(c=>[c,c]))
+      .map(([v,l])=>`<option value="${v}"${v===cur?" selected":""}>${l}</option>`).join("");
+    return `<div class="sel-wrap"><select class="ts sel-cat prov-cat ${cls}" onchange="Prov.onCatChange(this)">${opts}</select><span class="sel-arrow"></span></div>`;
+  },
+  onCatChange(sel){
+    ["cat-none","cat-A","cat-B","cat-C"].forEach(c=>sel.classList.remove(c));
+    sel.classList.add(sel.value ? "cat-"+sel.value : "cat-none");
+    mkDirty("prov-st");
+  },
   _buildTr(d){
     d=d||{};
+    const m = Prov._migrar(d);
     const tr=document.createElement("tr");
+    tr.dataset.catAnt = m.catAnt || "";
+    if(m.migrado) tr.dataset.migrado = "1";
+    const tipSist = m.catAnt ? ` title="Categoría anterior: ${esc(m.catAnt)}"` : "";
     tr.innerHTML=`
       <td data-label="#"><span class="row-num"></span></td>
       <td data-label="Empresa">
@@ -1797,10 +2011,13 @@ const Prov = {
         <div class="email-msg">Correo con formato inválido</div>
       </td>
       <td data-label="Contacto"><input class="ti prov-contacto" type="text" value="${esc(d.contacto||"")}" oninput="mkDirty('prov-st')"></td>
-      <td data-label="Categoría"><input class="ti prov-categoria" type="text" value="${esc(d.categoria||"")}" oninput="mkDirty('prov-st')"></td>
-      <td data-label="Lista precios">
+      <td data-label="Sistema"${tipSist}>${MS.html("sistema", m.sistemas, "prov-sistema")}</td>
+      <td data-label="Categoría">${Prov.catSelect(m.categoria)}</td>
+      <td data-label="Zona"><input class="ti prov-zona" type="text" value="${esc(d.zona||"")}" oninput="mkDirty('prov-st')"></td>
+      <td data-label="Tipo">${MS.html("tipo", d.tipos, "prov-tipo")}</td>
+      <td data-label="Lista precios/prod">
         <div class="lp-cell">
-          <button class="btn btn-light btn-sm btn-icon lp-add no-print" onclick="this.nextElementSibling.click()" title="Adjuntar PDF o Excel" aria-label="Adjuntar lista de precios">${CAMERA_ICON}</button>
+          <button class="btn btn-light btn-sm btn-icon lp-add no-print" onclick="this.nextElementSibling.click()" title="Adjuntar PDF o Excel" aria-label="Adjuntar lista de precios/productos">${CAMERA_ICON}</button>
           <input type="file" accept="${LP_ACCEPT}" multiple class="lp-input no-print" style="display:none" onchange="Prov.onListaSelect(this)">
           <div class="lp-thumbs">${Prov.renderListasHtml(d.listas||[])}</div>
         </div>
@@ -1935,13 +2152,19 @@ const Prov = {
     trs.forEach(tr=>tb.appendChild(tr));
     Prov._renum();
   },
+  _textoFila(tr){
+    const campos=[".prov-empresa",".prov-correo",".prov-contacto",".prov-zona"];
+    const sist = tr.querySelector(".prov-sistema"), tipo = tr.querySelector(".prov-tipo");
+    const cat = tr.querySelector(".prov-cat")?.value || "";
+    return campos.map(cls=>tr.querySelector(cls)?.value||"")
+      .concat(sist?MS.get(sist):[], tipo?MS.get(tipo):[], cat?["categoria "+cat, "cat "+cat]:[])
+      .join(" ").toLowerCase();
+  },
   filtrar(term){
     term=(term||"").trim().toLowerCase();
     document.querySelectorAll("#prov-tbody tr").forEach(tr=>{
       if(!term){ tr.style.display=""; return; }
-      const campos=[".prov-empresa",".prov-correo",".prov-contacto",".prov-categoria"];
-      const texto = campos.map(cls=>tr.querySelector(cls)?.value||"").join(" ").toLowerCase();
-      tr.style.display = texto.includes(term) ? "" : "none";
+      tr.style.display = Prov._textoFila(tr).includes(term) ? "" : "none";
     });
   },
   _renum(){
@@ -1951,13 +2174,14 @@ const Prov = {
   },
   addRow(){
     const tb=document.getElementById("prov-tbody");
-    tb.appendChild(Prov._buildTr({}));
+    tb.appendChild(Prov._buildTr({v2:true}));
     Prov.sortRows(); mkDirty("prov-st");
     aplicarPermisos();
   },
   elim(btn){
     const tr=btn.closest("tr");
     if(!confirm("¿Eliminar este proveedor?")) return;
+    MS.close();
     const lpIds = Prov.collectListas(tr).map(f=>f.id);
     tr.remove();
     lpIds.forEach(id=>{ delete LP_CACHE[id]; fbSet(FB_LISTAS+"/"+id, null).catch(()=>{}); }); Prov._renum(); mkDirty("prov-st");
@@ -1966,25 +2190,43 @@ const Prov = {
     scheduleSaveProv();
   },
   _ser(){
-    return [...document.querySelectorAll("#prov-tbody tr")].map(tr=>({
-      empresa: tr.querySelector(".prov-empresa")?.value||"",
-      correo: tr.querySelector(".prov-correo")?.value||"",
-      contacto: tr.querySelector(".prov-contacto")?.value||"",
-      categoria: tr.querySelector(".prov-categoria")?.value||"",
-      listas: Prov.collectListas(tr)
-    }));
+    return [...document.querySelectorAll("#prov-tbody tr")].map(tr=>{
+      const sist = tr.querySelector(".prov-sistema"), tipo = tr.querySelector(".prov-tipo");
+      return {
+        empresa: tr.querySelector(".prov-empresa")?.value||"",
+        correo: tr.querySelector(".prov-correo")?.value||"",
+        contacto: tr.querySelector(".prov-contacto")?.value||"",
+        sistemas: sist ? MS.get(sist) : [],
+        categoria: tr.querySelector(".prov-cat")?.value||"",
+        zona: tr.querySelector(".prov-zona")?.value||"",
+        tipos: tipo ? MS.get(tipo) : [],
+        categoriaAnt: tr.dataset.catAnt||"",
+        v2: true,
+        listas: Prov.collectListas(tr)
+      };
+    });
   },
-  restore(rows){
+  restore(rows, sistemasExtra){
+    MS.close();
     const tb=document.getElementById("prov-tbody"); tb.innerHTML="";
     const data=(rows&&rows.length)?rows:PROV_DEFAULT;
+    // Opciones de Sistema agregadas con "Otros": las guardadas + cualquier valor usado en filas
+    SISTEMAS_EXTRA = [];
+    comoArrayLP(sistemasExtra).forEach(agregarSistemaExtra);
+    data.forEach(d=>{ if(d && d.v2) comoArrayLP(d.sistemas).forEach(agregarSistemaExtra); });
     data.forEach(d=>tb.appendChild(Prov._buildTr(d)));
     Prov.sortRows();
     tb.querySelectorAll(".prov-correo").forEach(inp=>{ if(inp.value) Prov.validarCorreo(inp); });
     // Mantener el filtro del buscador al redibujar
     Prov.filtrar(document.getElementById("prov-search")?.value||"");
+    // Si alguna fila vino en el formato viejo, se guarda ya convertida
+    if(tb.querySelector('tr[data-migrado="1"]')){
+      tb.querySelectorAll('tr[data-migrado="1"]').forEach(tr=>delete tr.dataset.migrado);
+      scheduleSaveProv();
+    }
   },
   async save(){
-    const rows=Prov._ser(), pay={rows,ts:Date.now()};
+    const rows=Prov._ser(), pay={rows, sistemasExtra:SISTEMAS_EXTRA.slice(), ts:Date.now()};
     lsSet(LS_PROV,pay);
     // Marcar el ts ANTES de escribir: el SDK dispara onValue en el mismo set(),
     // y si no, el listener toma el guardado propio como remoto y redibuja la tabla.
@@ -2010,12 +2252,41 @@ const Coti = {
   pacienteOptions(cur){
     const vals = [...new Set([...document.querySelectorAll("#ped-tbody .ped-paciente")].map(t=>t.value.trim()).filter(Boolean))];
     const opts = vals.map(v=>`<option value="${esc(v)}"${v===cur?" selected":""}>${esc(v)}</option>`).join("");
-    return `<select class="ts coti-paciente" onchange="mkDirty('coti-st')"><option value="">— paciente —</option>${opts}</select>`;
+    return `<select class="ts coti-paciente" onchange="mkDirty('coti-st');Coti.refreshFechas()"><option value="">— paciente —</option>${opts}</select>`;
   },
   productoOptions(cur){
     const vals = [...new Set([...document.querySelectorAll("#ped-tbody .ped-producto")].map(t=>t.value.trim()).filter(Boolean))];
     const opts = vals.map(v=>`<option value="${esc(v)}"${v===cur?" selected":""}>${esc(v)}</option>`).join("");
-    return `<select class="ts coti-producto" onchange="mkDirty('coti-st')"><option value="">— producto —</option>${opts}</select>`;
+    return `<select class="ts coti-producto" onchange="mkDirty('coti-st');Coti.refreshFechas()"><option value="">— producto —</option>${opts}</select>`;
+  },
+  /* Fecha de pedido: se toma del pedido vinculado en Pedidos CX (solo lectura).
+     Vínculo: pedId de la cotización si el paciente coincide; si no, el pedido con
+     mismo paciente + producto; si no, el pedido más reciente de ese paciente. */
+  _pedidoDe(card){
+    const pac = (card.querySelector(".coti-paciente")?.value||"").trim();
+    const prod = (card.querySelector(".coti-producto")?.value||"").trim();
+    const trs = [...document.querySelectorAll("#ped-tbody tr")];
+    const val = (tr,cls)=>(tr.querySelector(cls)?.value||"").trim();
+    const porId = card.dataset.pedId ? trs.find(t=>t.dataset.pedId===card.dataset.pedId) : null;
+    if(!pac) return porId || null;
+    const okPac = t=> val(t,".ped-paciente")===pac;
+    const okProd = t=> !prod || val(t,".ped-producto")===prod;
+    if(porId && okPac(porId) && okProd(porId)) return porId;
+    return trs.find(t=>okPac(t) && prod && val(t,".ped-producto")===prod)
+        || (porId && okPac(porId) ? porId : null)
+        || trs.find(okPac)
+        || null;
+  },
+  refreshFechas(){
+    document.querySelectorAll("#coti-list .coti-card").forEach(card=>{
+      const el = card.querySelector(".coti-fpedido");
+      if(!el) return;
+      const tr = Coti._pedidoDe(card);
+      if(tr) card.dataset.pedId = tr.dataset.pedId || "";
+      const f = tr ? (tr.querySelector(".ped-fpedido")?.value||"").trim() : "";
+      el.textContent = f || "—";
+      el.classList.toggle("vacio", !f);
+    });
   },
   proveedorOptions(cur){
     const provs = [...document.querySelectorAll("#prov-tbody .prov-empresa")].map(i=>i.value.trim()).filter(Boolean);
@@ -2192,6 +2463,7 @@ const Coti = {
       <div class="coti-head">
         <div class="coti-field"><span class="coti-lbl">Paciente</span>${Coti.pacienteOptions(d.paciente||"")}</div>
         <div class="coti-field"><span class="coti-lbl">Producto</span>${Coti.productoOptions(d.producto||"")}</div>
+        <div class="coti-field f-fecha"><span class="coti-lbl">Fecha pedido</span><span class="coti-fpedido vacio">—</span></div>
         <div class="coti-field f-sm"><span class="coti-lbl">Cantidad</span><input class="ti coti-cantidad" type="text" inputmode="numeric" value="${esc(d.cantidad||"")}" oninput="mkDirty('coti-st');maskOC(this)"></div>
         <div class="coti-field f-md"><span class="coti-lbl">Cant. proveedores a cotizar</span><input class="ti coti-provnum" type="text" inputmode="numeric" value="${esc(provNum)}" oninput="maskOC(this);mkDirty('coti-st')" onchange="Coti.onProvNumChange(this)" onkeydown="if(event.key==='Enter')this.blur()"></div>
         <div class="coti-del-wrap no-print"><button class="del-btn" onclick="Coti.eliminarCard(this)" title="Eliminar cotización">×</button></div>
@@ -2270,6 +2542,7 @@ const Coti = {
   restore(rows){
     const list=document.getElementById("coti-list"); list.innerHTML="";
     (rows||[]).forEach(d=>list.appendChild(Coti._buildCard(d)));
+    Coti.refreshFechas();
   },
   async save(){
     const rows=Coti._ser(), pay={rows,ts:Date.now()};
@@ -2294,12 +2567,15 @@ document.addEventListener("input", e=>{
   if(e.target.classList.contains("ped-paciente") || e.target.classList.contains("ped-producto")){
     Coti.refreshPacienteProductoSelects();
   }
+  if(e.target.classList.contains("ped-paciente") || e.target.classList.contains("ped-producto") || e.target.classList.contains("ped-fpedido")){
+    Coti.refreshFechas();
+  }
   if(e.target.classList.contains("prov-empresa")){
     Coti.refreshProveedorSelects();
   }
 });
 document.addEventListener("change", e=>{
-  if(e.target.closest("#ped-tbody")) scheduleSavePed();
+  if(e.target.closest("#ped-tbody")){ scheduleSavePed(); Coti.refreshFechas(); }
   if(e.target.closest("#prov-tbody")) scheduleSaveProv();
   if(e.target.closest("#coti-list")) scheduleSaveCoti();
 });
@@ -2356,20 +2632,22 @@ function _renderInicial(){
   Ped.refreshEstadoFiltro();
 
   // Proveedores (primero, para que los selects de proveedor de Pedidos ya tengan las opciones)
-  let provFinal;
+  let provFinal, provExtra = [];
   const remoteProvTs = (rProv && rProv.ts) || 0;
   if(remoteProvTs >= (lProv.ts||0) && rProv && rProv.rows && rProv.rows.length){
-    provFinal = rProv.rows; lastProvTs = remoteProvTs; lsSet(LS_PROV, rProv);
+    provFinal = rProv.rows; provExtra = comoArrayLP(rProv.sistemasExtra);
+    lastProvTs = remoteProvTs; lsSet(LS_PROV, rProv);
   } else if(lProv.rows && lProv.rows.length){
-    provFinal = lProv.rows; lastProvTs = lProv.ts||Date.now();
-    fbSet(FB_PROV, {rows:provFinal, ts:lastProvTs}).catch(()=>{});
+    provFinal = lProv.rows; provExtra = comoArrayLP(lProv.sistemasExtra);
+    lastProvTs = lProv.ts||Date.now();
+    fbSet(FB_PROV, {rows:provFinal, sistemasExtra:provExtra, ts:lastProvTs}).catch(()=>{});
   } else {
     provFinal = PROV_DEFAULT;
     lastProvTs = Date.now();
     fbSet(FB_PROV, {rows:provFinal, ts:lastProvTs}).catch(()=>{});
     lsSet(LS_PROV, {rows:provFinal, ts:lastProvTs});
   }
-  Prov.restore(provFinal);
+  Prov.restore(provFinal, provExtra);
 
   // Pedidos
   let pedFinal;
@@ -2415,7 +2693,7 @@ function _fallbackOffline(){
   ESTADOS_EXTRA = Array.isArray(lEstx.list) ? lEstx.list : [];
   rebuildEstados();
   Ped.refreshEstadoFiltro();
-  Prov.restore((lProv.rows&&lProv.rows.length)?lProv.rows:PROV_DEFAULT);
+  Prov.restore((lProv.rows&&lProv.rows.length)?lProv.rows:PROV_DEFAULT, lProv.sistemasExtra);
   Ped.restore(lPed.rows||[]);
   Ped.refreshProveedorSelects();
   Coti.restore(lCoti.rows||[]);
@@ -2457,7 +2735,7 @@ async function loadAll(){
     if(!_gotProv){ _gotProv = true; _marcarListo(); }
     else if(_cargaInicialHecha && _rProv && (_rProv.ts||0) > lastProvTs){
       lastProvTs = _rProv.ts; lsSet(LS_PROV, _rProv);
-      Prov.restore(_rProv.rows||[]); Ped.refreshProveedorSelects();
+      Prov.restore(_rProv.rows||[], _rProv.sistemasExtra); Ped.refreshProveedorSelects();
       Coti.refreshPacienteProductoSelects(); Coti.refreshProveedorSelects();
       aplicarPermisos();
     }
@@ -2469,6 +2747,7 @@ async function loadAll(){
     else if(_cargaInicialHecha && _rPed && (_rPed.ts||0) > lastPedTs){
       lastPedTs = _rPed.ts; lsSet(LS_PED, _rPed);
       Ped.restore(_rPed.rows||[]); Ped.refreshProveedorSelects();
+      Coti.refreshFechas();
     }
   }, ()=>{ _anyError=true; if(!_gotPed){ _gotPed=true; _marcarListo(); } setSyncStatus("Sin conexión","sync-error"); });
 
@@ -2486,6 +2765,7 @@ async function loadAll(){
 
 /* ══════════════════════ NAV SCROLLSPY ══════════════════════ */
 function goSection(el, id){
+  MS.close();
   document.querySelectorAll("nav a").forEach(a=>a.classList.remove("active"));
   el.classList.add("active");
   document.querySelectorAll(".section-page").forEach(s=>s.classList.remove("active"));
