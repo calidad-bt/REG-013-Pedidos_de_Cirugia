@@ -2019,6 +2019,7 @@ const Prov = {
   onCatChange(sel){
     ["cat-none","cat-A","cat-B","cat-C"].forEach(c=>sel.classList.remove(c));
     sel.classList.add(sel.value ? "cat-"+sel.value : "cat-none");
+    Coti.pintarProveedores(document.getElementById("coti-list"));
     mkDirty("prov-st");
   },
   _buildTr(d){
@@ -2328,7 +2329,26 @@ const COTI_ESTADOS = [
   ["aprobado",   "APROBADO"]
 ];
 
+function provCategoria(nombre){
+  if(!nombre) return "";
+  const c = String(nombre).trim().toUpperCase();
+  const tr = [...document.querySelectorAll("#prov-tbody tr")]
+    .find(t=>(t.querySelector(".prov-empresa")?.value||"").trim().toUpperCase()===c);
+  const cat = tr ? (tr.querySelector(".prov-cat")?.value||"") : "";
+  return CATEGORIAS_PROV.includes(cat) ? cat : "";
+}
+
 const Coti = {
+  /* Pinta el select de proveedor con el color de su categoría (A/B/C) en Proveedores CX */
+  pintarProveedor(sel){
+    ["cat-A","cat-B","cat-C"].forEach(c=>sel.classList.remove(c));
+    const cat = sel.value==="otros" ? "" : provCategoria(sel.value);
+    if(cat) sel.classList.add("cat-"+cat);
+    sel.title = cat ? "Categoría "+cat : "";
+  },
+  pintarProveedores(root){
+    (root||document).querySelectorAll(".coti-prov-sel").forEach(Coti.pintarProveedor);
+  },
   pacienteOptions(cur){
     const vals = [...new Set([...document.querySelectorAll("#ped-tbody .ped-paciente")].map(t=>t.value.trim()).filter(Boolean))];
     const opts = vals.map(v=>`<option value="${esc(v)}"${v===cur?" selected":""}>${esc(v)}</option>`).join("");
@@ -2388,6 +2408,7 @@ const Coti = {
   onProveedorChange(sel){
     const otro = sel.parentElement.querySelector(".coti-prov-otro");
     if(otro) otro.style.display = sel.value==="otros" ? "block" : "none";
+    Coti.pintarProveedor(sel);
     mkDirty("coti-st");
   },
   getDolarRate(){
@@ -2526,6 +2547,7 @@ const Coti = {
     wrap.innerHTML = next.length
       ? next.map((p,i)=>Coti.buildProvRow(i,p)).join("")
       : `<div class="coti-empty">Ingresá la cantidad de proveedores a cotizar arriba.</div>`;
+    Coti.pintarProveedores(card);
   },
   onProvNumChange(inp){
     maskOC(inp);
@@ -2561,6 +2583,7 @@ const Coti = {
     wrap.innerHTML = next.length
       ? next.map((p,i)=>Coti.buildProvRow(i,p)).join("")
       : `<div class="coti-empty">Ingresá la cantidad de proveedores a cotizar arriba.</div>`;
+    Coti.pintarProveedores(card);
   },
   addCard(){
     const list=document.getElementById("coti-list");
@@ -2608,6 +2631,7 @@ const Coti = {
       sel.innerHTML = `<option value="">— proveedor —</option>${opts}<option value="otros"${otroSel}>Otros</option>`;
       if(cur==="otros") sel.value=cur; else if(m) sel.value=m;
     });
+    Coti.pintarProveedores(document.getElementById("coti-list"));
   },
   _ser(){
     return [...document.querySelectorAll("#coti-list .coti-card")].map(card=>({
